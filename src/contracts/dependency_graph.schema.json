@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/dependency_graph.schema.json",
+  "title": "Lane A Dependency Graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "generated_at", "project", "nodes", "edges", "external_projects"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["repo_id", "team_id", "type"],
+        "properties": {
+          "repo_id": { "type": "string", "minLength": 1 },
+          "team_id": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "enum": ["repo"] }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from_repo_id", "to_repo_id", "reason", "evidence"],
+        "properties": {
+          "from_repo_id": { "type": "string", "minLength": 1 },
+          "to_repo_id": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "path", "note"],
+              "properties": {
+                "type": { "type": "string", "enum": ["file"] },
+                "path": { "type": "string", "minLength": 1 },
+                "note": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "external_projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["project_code", "knowledge_repo_dir", "repos", "reason"],
+        "properties": {
+          "project_code": { "type": "string", "minLength": 1 },
+          "knowledge_repo_dir": { "type": "string", "minLength": 1 },
+          "repos": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}
+

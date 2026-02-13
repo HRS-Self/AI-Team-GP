@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+.env
+ledger.jsonl
+ai/ledger.jsonl
+ai/.intake_state.json
+ai/work/**
+ai/governance/**
+!ai/work/.gitkeep
+!ai/governance/.gitkeep
+ai/registry/REGISTRY.lock
+ai/registry/REGISTRY.json.tmp.*

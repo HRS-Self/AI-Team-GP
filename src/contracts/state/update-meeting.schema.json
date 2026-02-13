@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-team://contracts/state/update-meeting.schema.json",
+  "title": "Lane A Versioned Update Meeting",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "meeting_id", "scope", "from_version", "to_version", "status", "asked", "answers", "decision", "resulting_actions"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "meeting_id": { "type": "string", "minLength": 3 },
+    "scope": { "type": "string", "pattern": "^(system|repo:[A-Za-z0-9._-]+)$" },
+    "from_version": { "type": "string", "pattern": "^v\\d+(\\.\\d+)*$" },
+    "to_version": { "type": "string", "pattern": "^v\\d+(\\.\\d+)*$" },
+    "status": { "type": "string", "enum": ["open", "closed"] },
+    "next_question": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["qid", "question"],
+      "properties": {
+        "qid": { "type": "string", "minLength": 2 },
+        "question": { "type": "string", "minLength": 3 }
+      }
+    },
+    "asked": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["qid", "question", "asked_at"],
+        "properties": {
+          "qid": { "type": "string", "minLength": 2 },
+          "question": { "type": "string", "minLength": 3 },
+          "asked_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "answers": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["qid", "answer_ref", "answered_at"],
+        "properties": {
+          "qid": { "type": "string", "minLength": 2 },
+          "answer_ref": { "type": "string", "minLength": 1 },
+          "answered_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "decision": { "type": ["string", "null"], "enum": ["approve", "reject", "defer", null] },
+    "notes": { "type": ["string", "null"] },
+    "resulting_actions": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "created_at": { "type": ["string", "null"], "format": "date-time" },
+    "updated_at": { "type": ["string", "null"], "format": "date-time" },
+    "closed_at": { "type": ["string", "null"], "format": "date-time" },
+    "closed_by": { "type": ["string", "null"] }
+  }
+}
+

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArchitectReview",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ssot_references",
+    "summary_verdict_risk",
+    "what_looks_solid",
+    "what_is_missing_or_unclear",
+    "risks_not_addressed",
+    "cross_team_inconsistencies",
+    "questions_to_answer_before_approval",
+    "suggested_next_step"
+  ],
+  "properties": {
+    "ssot_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["doc", "section", "rule_id"],
+        "properties": {
+          "doc": { "type": "string" },
+          "section": { "type": "string" },
+          "rule_id": { "type": "string" }
+        }
+      }
+    },
+    "summary_verdict_risk": {
+      "type": "string",
+      "enum": ["Low", "Med", "High"]
+    },
+    "what_looks_solid": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "what_is_missing_or_unclear": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risks_not_addressed": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cross_team_inconsistencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "questions_to_answer_before_approval": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "suggested_next_step": {
+      "type": "string",
+      "enum": ["Revise proposals", "Proceed to patch plan", "Escalate"]
+    }
+  }
+}

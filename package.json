@@ -1,0 +1,29 @@
+{
+  "name": "ai-team",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "intake": "node src/intake/server.js",
+    "orchestrate": "node src/cli.js",
+    "orchestrate:demo": "node src/cli.js --text \"MVP demo intake: add a hello endpoint to Backend service and update portal copy\"",
+    "orchestrate:dry": "node src/cli.js --dry-run --text \"MVP demo intake: add a hello endpoint to Backend service and update portal copy\"",
+    "orchestrate:validate": "node src/cli.js --validate",
+    "project:init": "node src/cli.js --initial-project",
+    "verify:knowledge": "node src/tools/verify-knowledge-pathing.js",
+    "web": "node src/web/server.js",
+    "web:dev": "WEB_BIND=0.0.0.0 WEB_PORT=8090 node src/web/server.js",
+    "web:smoke": "node src/web/smoke.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@langchain/openai": "^1.2.3",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.3",
+    "express": "^4.22.1",
+    "langchain": "^1.2.15"
+  }
+}

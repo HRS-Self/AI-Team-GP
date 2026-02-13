@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-team/triage.schema.json",
+  "title": "AI-Team Triage Output v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "source_intake_id", "triage_id", "createdAt", "tasks", "dedupe", "confidence_overall", "questions_for_human"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "source_intake_id": { "type": "string", "minLength": 1 },
+    "triage_id": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "minLength": 1 },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "title",
+          "description",
+          "suggested_repo_ids",
+          "suggested_team_ids",
+          "target_branch",
+          "acceptance_criteria",
+          "risk_level",
+          "dependencies"
+        ],
+        "properties": {
+          "task_id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "suggested_repo_ids": { "type": "array", "items": { "type": "string" } },
+          "suggested_team_ids": { "type": "array", "items": { "type": "string" } },
+          "target_branch": { "type": ["string", "null"] },
+          "acceptance_criteria": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "risk_level": { "type": "string", "enum": ["low", "normal", "high"] },
+          "dependencies": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["depends_on_workIds", "depends_on_task_ids"],
+            "properties": {
+              "depends_on_workIds": { "type": "array", "items": { "type": "string" } },
+              "depends_on_task_ids": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "dedupe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["possible_duplicates"],
+      "properties": {
+        "possible_duplicates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["workId", "reason", "confidence"],
+            "properties": {
+              "workId": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 1 },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "confidence_overall": { "type": "number", "minimum": 0, "maximum": 1 },
+    "questions_for_human": { "type": "array", "items": { "type": "string" } }
+  }
+}
+

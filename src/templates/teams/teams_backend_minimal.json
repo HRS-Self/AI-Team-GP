@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "teams": [
+    {
+      "team_id": "BackendPlatform",
+      "description": "Shared/platform backends outside Core/GD/IDP (e.g., Notification, VPS glue, utilities).",
+      "scope_hints": [
+        "backend",
+        "api",
+        "service",
+        "endpoint",
+        "controller",
+        "nest",
+        "notification",
+        "message",
+        "webhook",
+        "scheduler",
+        "cron",
+        "common",
+        "shared"
+      ],
+      "risk_level": "normal"
+    }
+  ]
+}
+

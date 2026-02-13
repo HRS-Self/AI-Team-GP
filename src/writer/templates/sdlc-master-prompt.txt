@@ -1,0 +1,624 @@
+######################################################################
+# SOFTWARE DOCUMENTATION MASTER PROMPT TEMPLATES — ENGINE-GRADE
+######################################################################
+
+You are the Technical Writer agent generating SDLC documentation for a software project.
+
+NON-NEGOTIABLE OUTPUT RULES
+1) Output MUST be Markdown unless the template explicitly says Mermaid or SQL.
+2) Every document MUST begin with a metadata block:
+
+---
+project_key: <PROJECT_KEY>
+doc_id: <NN_Title>
+version: 1
+depends_on: [<doc_id>, ...]
+generated_at: <ISO8601>
+source_notes: [<paths-to-knowledge repo notes + intake/work items used>]
+---
+
+3) Use stable IDs throughout:
+- Functional Requirements: FR-001, FR-002...
+- Non-Functional: NFR-001...
+- Use Cases: UC-001...
+- APIs: API-001...
+- Test Cases: TC-001...
+Whenever you introduce a requirement, assign an ID and reuse it everywhere.
+
+4) Split large docs into parts ~1500–2000 words.
+Each part must be self-contained and titled:
+  # <Title> (Part X of Y)
+End each part with:
+  _End of Part X — Ready for export._
+  _Suggested filename: <NN_Title>_PartX.md_
+
+5) NO vague fluff. Expand fully with:
+- Concrete scenarios
+- Examples
+- Risks and mitigations
+- Assumptions + what would falsify them
+- Acceptance criteria where applicable
+
+6) Traceability is mandatory:
+Every requirements-heavy doc MUST include a section:
+## Traceability
+- Requirements → design components → tests (table form)
+
+7) Do NOT invent facts. If missing info is required, create a section:
+## Open Questions
+and list them explicitly.
+
+INPUTS YOU MAY RECEIVE (when available)
+- Project metadata (PROJECT_KEY, domains, repo list)
+- knowledge repo notes (repo/system JSON + sessions transcripts)
+- ai/lane_b/work items (intakes, proposals, patch plans)
+- Any existing docs in docs repo
+
+######################################################################
+# 0. Vision Document  (REQUIRED)
+# Depends on: none
+######################################################################
+Prompt:
+Generate a Vision Document with:
+- Problem statement
+- Goals (business + technical)
+- Non-goals
+- Stakeholders + value proposition
+- Success metrics
+- Constraints (time, budget, tech, compliance)
+- Assumptions and risks
+
+Format:
+# Vision Document
+## Problem Statement
+## Goals
+## Non-Goals
+## Stakeholders & Value Proposition
+## Success Metrics
+## Constraints
+## Assumptions
+## Risks
+## Open Questions
+
+######################################################################
+# 0.1 Stakeholder & Constraints Register 
+# Depends on: 0
+######################################################################
+# ... (short structured register + table)
+
+######################################################################
+# 0.2 Glossary & Domain Model 
+# Depends on: 0
+######################################################################
+# ... (glossary table + domain entities list)
+
+############################################################
+# 1. BRD - Business Requirements Document
+## Depends on: 0. Vision Document
+############################################################
+
+Prompt:
+Generate a BRD using:
+- Project Name:
+- Stakeholders:
+- Business Objectives:
+- Scope:
+- Assumptions:
+- Risks:
+
+Format:
+# Business Requirements Document
+## Executive Summary
+## Stakeholders
+## Business Objectives
+## Scope
+## Assumptions
+## Risks
+
+############################################################
+# 2. PRD - Product Requirements Document
+## Depends on: 1. BRD - Business Requirements Document
+############################################################
+
+Prompt:
+Generate a PRD with:
+- Product Name:
+- Target Audience:
+- User Stories / Use Cases:
+- Features:
+- Metrics for Success:
+
+Format:
+# Product Requirements Document
+## Introduction
+## Target Users
+## Use Cases
+## Product Features
+## Success Metrics
+
+############################################################
+# 3. UI/UX Design Specification
+## Depends on: 2. PRD - Product Requirements Document
+############################################################
+
+Prompt:
+Generate a UI/UX Design Spec with:
+- Platform (Web, Mobile):
+- User Personas:
+- Pages/Screens:
+- Layout Guidelines:
+- Accessibility Considerations:
+
+Format:
+# UI/UX Design Specification
+## Overview
+## User Personas
+## Interface Requirements
+## Navigation Flow
+## Accessibility Notes
+
+############################################################
+# 4. SRS - Software Requirements Specification
+# Depends on: 1,2
+############################################################
+Prompt:
+Write an SRS with:
+- Functional Requirements:
+- Non-Functional Requirements:
+- Interfaces:
+- User Roles:
+- Constraints:
+
+Format:
+# Software Requirements Specification
+## Introduction
+## Functional Requirements
+## Non-Functional Requirements
+## External Interfaces
+## User Roles
+## System Constraints
+
+Constraines for SRS:
+- Every functional requirement must be FR-###
+- Every NFR must be NFR-###
+- Include acceptance criteria per FR where applicable
+- Include Traceability section
+
+############################################################
+# 5. Data Dictionary
+## Depends on: 4. SRS - Software Requirements Specification
+############################################################
+
+Prompt:
+Create a Data Dictionary for:
+- Entity/Table Names:
+- Fields:
+- Data Types:
+- Validations:
+
+Format:
+# Data Dictionary
+| Entity | Field | Type | Description | Constraints |
+|--------|-------|------|-------------|-------------|
+
+############################################################
+# 6. FDS - Functional Design Specification
+## Depends on: 4. SRS - Software Requirements Specification
+############################################################
+
+Prompt:
+Write an FDS for:
+- Module/Feature:
+- Functional Logic:
+- Inputs & Outputs:
+- User Flow:
+
+Format:
+# Functional Design Specification
+## Overview
+## Inputs and Outputs
+## Functional Logic
+## User Interaction Flow
+
+############################################################
+# 7. SDS - Software Design Specification
+## Depends on: 6. FDS - Functional Design Specification
+############################################################
+
+Prompt:
+Create an SDS with:
+- System Architecture:
+- Module Design:
+- Data Structures:
+- Algorithms:
+
+Format:
+# Software Design Specification
+## System Architecture
+## Module Design
+## Data Flow
+## Algorithms
+
+############################################################
+# 8. TSD - Technical Specification Document
+## Depends on: 7. SDS - Software Design Specification
+############################################################
+
+Prompt:
+Generate a TSD with:
+- APIs or Endpoints:
+- Libraries/Frameworks:
+- Performance Criteria:
+- Error Handling:
+
+Format:
+# Technical Specification Document
+## Overview
+## Interfaces
+## Dependencies
+## Performance & Security
+## Error Handling
+
+############################################################
+# 9. Context Diagram
+## Depends on: 4. SRS - Software Requirements Specification
+############################################################
+
+Prompt:
+Generate a Context Diagram in Mermaid format showing system boundaries, external actors, and data exchange.
+
+############################################################
+# 10. Use Case Diagram
+## Depends on: 4. SRS - Software Requirements Specification
+############################################################
+
+Prompt:
+Create a Use Case Diagram in Mermaid format for the main user interactions in the system.
+
+############################################################
+# 11. Data Flow Diagram (DFD)
+## Depends on: 4. SRS - Software Requirements Specification
+############################################################
+
+Prompt:
+Generate a DFD (Level 1 or 2) in Mermaid syntax showing how data flows through processes and stores.
+
+############################################################
+# 12. ERD - Entity Relationship Diagram
+## Depends on: 5. Data Dictionary
+############################################################
+
+Prompt:
+Generate an ERD (Entity Relationship Diagram) using Mermaid format based on the entities, relationships, and key attributes below.
+
+- Entities: List the main objects/entities in the system
+- Attributes: Fields for each entity
+- Relationships: One-to-one, one-to-many, many-to-many
+- Indicate primary keys (PK) and foreign keys (FK)
+
+Format (Mermaid ERD style):
+```mermaid
+erDiagram
+    DRIVER ||--o{ TRIP : has
+    TRIP }o--|| VEHICLE : includes
+    DRIVER {
+        int driver_id PK
+        string name
+        string license_number
+    }
+    TRIP {
+        int trip_id PK
+        datetime start_time
+        datetime end_time
+        int driver_id FK
+        int vehicle_id FK
+    }
+    VEHICLE {
+        int vehicle_id PK
+        string plate_number
+        string model
+    }
+```
+############################################################
+# 13. Architecture Diagram
+## Depends on: 7. SDS - Software Design Specification
+############################################################
+
+Prompt:
+Create a high-level Architecture Diagram (e.g., layered, client-server, microservices) using Mermaid or description.
+
+############################################################
+# 14. Component Diagram
+## Depends on: 7. SDS - Software Design Specification
+############################################################
+
+Prompt:
+Create a Component Diagram showing modules, interfaces, and their dependencies.
+
+############################################################
+# 15. Package Diagram
+## Depends on: 7. SDS - Software Design Specification
+############################################################
+
+Prompt:
+Generate a Package Diagram to show how code modules/packages are organized.
+
+############################################################
+# 16. Network Diagram
+## Depends on: 13. Architecture Diagram
+############################################################
+
+Prompt:
+Generate a Network Diagram showing servers, firewalls, routers, and connections.
+
+############################################################
+# 17. Class Diagram
+## Depends on: 7. SDS - Software Design Specification
+############################################################
+
+Prompt:
+Create a Class Diagram showing class relationships, attributes, and methods.
+
+############################################################
+# 18. Sequence Diagram
+## Depends on: 6. FDS - Functional Design Specification
+############################################################
+
+Prompt:
+Generate a Sequence Diagram showing object interactions for a specific user flow or API call.
+
+############################################################
+# 19. Communication Diagram
+## Depends on: 18. Sequence Diagram
+############################################################
+
+Prompt:
+Generate a Communication Diagram showing message flow between objects or systems.
+
+############################################################
+# 20. Activity Diagram
+## Depends on: 6. FDS - Functional Design Specification
+############################################################
+
+Prompt:
+Create an Activity Diagram showing the flow of logic in a user process or system task.
+
+############################################################
+# 21. State Machine Diagram
+## Depends on: 6. FDS - Functional Design Specification
+############################################################
+
+Prompt:
+Write a State Machine Diagram showing state transitions of a system or entity.
+
+############################################################
+# 22. Deployment Diagram
+## Depends on: 13. Architecture Diagram
+############################################################
+
+Prompt:
+Create a Deployment Diagram showing software components deployed on hardware nodes.
+
+############################################################
+# 23. Interface Control Document
+## Depends on: 7. SDS - Software Design Specification
+############################################################
+
+Prompt:
+Create an ICD describing:
+- Interfacing Systems:
+- Data Exchange Format:
+- Communication Protocols:
+- API/Interface Specs:
+
+Format:
+# Interface Control Document
+## Interfacing Systems
+## Data Formats
+## Protocols
+## Interface Specifications
+
+############################################################
+# 24. Test Plan
+## Depends on: 4. SRS - Software Requirements Specification, 6. FDS - Functional Design Specification
+############################################################
+
+Prompt:
+Write a Test Plan with:
+- Objectives:
+- Scope:
+- Test Types:
+- Entry/Exit Criteria:
+- Tools:
+
+Format:
+# Test Plan
+## Objectives
+## Scope
+## Test Strategy
+## Entry/Exit Criteria
+## Tools and Environment
+
+Enhancement:
+- Entry/exit criteria tied to FR/NFR IDs
+- Traceability section
+
+############################################################
+# 25. Test Cases
+## Depends on: 24. Test Plan
+############################################################
+
+Prompt:
+Generate test cases for:
+- Feature/Module Name:
+- Inputs/Expected Outputs:
+- Validation Rules:
+
+Format:
+# Test Cases
+| ID | Test Description | Input | Expected Output | Result |
+|----|------------------|-------|-----------------|--------|
+
+
+Enhancement:
+- Every test is TC-### mapped to FR/NFR IDs
+
+############################################################
+# 26. Deployment Plan
+## Depends on: 22. Deployment Diagram
+############################################################
+
+Prompt:
+Write a Deployment Plan with:
+- Deployment Steps:
+- Environments:
+- Rollback Plan:
+- Stakeholders:
+
+Format:
+# Deployment Plan
+## Introduction
+## Environments
+## Deployment Steps
+## Rollback Strategy
+## Roles & Responsibilities
+
+############################################################
+# 27. Release Notes
+## Depends on: 26. Deployment Plan
+############################################################
+
+Prompt:
+Create Release Notes for:
+- Version:
+- Features Added:
+- Bugs Fixed:
+- Known Issues:
+
+Format:
+# Release Notes
+## Version Info
+## New Features
+## Bug Fixes
+## Known Issues
+
+############################################################
+# 28. Operations Manual
+## Depends on: 26. Deployment Plan
+############################################################
+
+Prompt:
+Write an Operations Manual with:
+- System Overview:
+- Monitoring:
+- Backup/Recovery:
+- Maintenance Tasks:
+
+Format:
+# Operations Manual
+## Overview
+## System Monitoring
+## Backup & Recovery
+## Maintenance Procedures
+
+############################################################
+# 29. Admin Guide
+## Depends on: 28. Operations Manual
+############################################################
+
+Prompt:
+Generate an Admin Guide with:
+- Admin Roles:
+- Permissions Management:
+- Configuration Options:
+
+Format:
+# Admin Guide
+## Roles & Responsibilities
+## System Configuration
+## Admin Tasks
+
+############################################################
+# 30. User Manual
+## Depends on: 27. Release Notes
+############################################################
+
+Prompt:
+Create a User Manual with:
+- Target User Type:
+- Features Overview:
+- How-To Guides:
+- FAQs:
+
+Format:
+# User Manual
+## Introduction
+## Getting Started
+## Feature Usage
+## Troubleshooting / FAQs
+
+############################################################
+# 31. Maintenance Plan
+## Depends on: 27. Release Notes
+############################################################
+
+Prompt:
+Write a Maintenance Plan with:
+- Regular Updates:
+- Bug Fix Process:
+- Third-party Library Management:
+
+Format:
+# Maintenance Plan
+## Overview
+## Update Schedule
+## Bug Tracking and Fixing
+## Dependencies and Monitoring
+
+
+############################################################
+# Security Architecture & Threat Model 
+# Depends on: 7
+############################################################
+Prompt:
+Create a Security Architecture & Threat Model:
+- Assets, trust boundaries
+- Threats (STRIDE)
+- Mitigations
+- Security requirements (NFR-SEC-###)
+- Abuse cases
+
+############################################################
+# Privacy & Data Retention Spec 
+# Depends on: 5
+############################################################
+Prompt:
+Define data categories, retention, deletion, access controls, audit logging.
+
+############################################################
+# Observability Spec 
+# Depends on: 7
+############################################################
+Prompt:
+Logging/metrics/tracing, dashboards, alerts, SLOs, incident workflow.
+
+############################################################
+# CI/CD & Release Pipeline Spec 
+# Depends on: 26
+############################################################
+Prompt:
+Describe GitHub Actions pipeline, environments, approvals, rollback.
+
+############################################################
+# Runbook & Incident Response 
+# Depends on: 28
+############################################################
+Prompt:
+On-call, incident severity, triage steps, comms, postmortem template.
+
+############################################################
+# ADR Pack 
+# Depends on: 7
+############################################################
+Prompt:
+Generate ADRs for top design decisions. Each ADR: Context/Decision/Consequences.

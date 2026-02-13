@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/state/knowledge-version.schema.json",
+  "title": "Lane A Knowledge Version Pointer (ops-only)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "current", "history"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "current": { "type": "string", "minLength": 2 },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["v", "at", "reason", "scope"],
+        "properties": {
+          "v": { "type": "string", "minLength": 2 },
+          "at": { "type": "string", "format": "date-time" },
+          "reason": { "type": "string", "minLength": 1 },
+          "scope": { "type": "string", "minLength": 1 },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}
+

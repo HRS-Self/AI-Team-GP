@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/state/sufficiency.schema.json",
+  "title": "Lane A Knowledge Sufficiency (Versioned)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "scope",
+    "knowledge_version",
+    "status",
+    "evidence_basis",
+    "blockers",
+    "stale_status"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "scope": { "type": "string", "pattern": "^(system|repo:[A-Za-z0-9._-]+)$" },
+    "knowledge_version": { "type": "string", "pattern": "^v\\d+(\\.\\d+)*$" },
+    "status": { "type": "string", "enum": ["insufficient", "proposed_sufficient", "sufficient"] },
+    "decided_by": { "type": ["string", "null"], "minLength": 1 },
+    "decided_at": { "type": ["string", "null"], "format": "date-time" },
+    "rationale_md_path": { "type": ["string", "null"], "minLength": 1, "pattern": "^/" },
+    "evidence_basis": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 3 },
+      "maxItems": 200
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "details"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "details": { "type": "string", "minLength": 1 }
+        }
+      },
+      "maxItems": 200
+    },
+    "stale_status": { "type": "string", "enum": ["fresh", "soft_stale", "hard_stale"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "sufficient" } } },
+      "then": { "required": ["decided_by", "decided_at"] }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["insufficient", "proposed_sufficient"] } } },
+      "then": {
+        "properties": { "decided_by": { "const": null }, "decided_at": { "const": null } }
+      }
+    }
+  ]
+}

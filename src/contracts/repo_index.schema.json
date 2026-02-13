@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/repo_index.schema.json",
+  "title": "Lane A Repo Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "repo_id",
+    "scanned_at",
+    "head_sha",
+    "languages",
+    "entrypoints",
+    "build_commands",
+    "api_surface",
+    "migrations_schema",
+    "cross_repo_dependencies",
+    "hotspots",
+    "fingerprints",
+    "dependencies"
+  ],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "repo_id": { "type": "string", "minLength": 1 },
+    "scanned_at": { "type": "string", "format": "date-time" },
+    "head_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "languages": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "entrypoints": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "build_commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package_manager", "install", "lint", "build", "test", "scripts", "evidence_files"],
+      "properties": {
+        "package_manager": { "type": "string", "minLength": 1 },
+        "install": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "lint": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "build": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "test": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "scripts": { "type": "object", "additionalProperties": { "type": "string" } },
+        "evidence_files": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "hotspots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file_path", "reason"],
+        "properties": {
+          "file_path": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "api_surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["openapi_files", "routes_controllers", "events_topics"],
+      "properties": {
+        "openapi_files": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "routes_controllers": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "events_topics": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "migrations_schema": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "cross_repo_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "target", "evidence_refs"],
+        "properties": {
+          "type": { "type": "string", "enum": ["npm", "maven", "gradle", "git", "http"] },
+          "target": { "type": "string", "minLength": 1 },
+          "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 }
+        }
+      }
+    },
+    "fingerprints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sha256"],
+        "properties": {
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "detected_at", "mode", "depends_on"],
+      "properties": {
+        "version": { "type": "integer", "minimum": 1 },
+        "detected_at": { "type": "string", "format": "date-time" },
+        "mode": { "type": "string", "enum": ["detected"] },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "repo_id",
+              "owner_repo",
+              "project_code",
+              "abs_path",
+              "active_branch",
+              "knowledge_abs_path",
+              "knowledge_git_remote",
+              "knowledge_active_branch",
+              "reason",
+              "evidence"
+            ],
+            "properties": {
+              "kind": { "type": "string", "enum": ["project_repo"] },
+              "repo_id": { "type": "string", "minLength": 1 },
+              "owner_repo": { "type": "string", "minLength": 1 },
+              "project_code": { "type": "string", "minLength": 1 },
+              "abs_path": { "type": "string", "minLength": 1 },
+              "active_branch": { "type": "string", "minLength": 1 },
+              "knowledge_abs_path": { "type": "string", "minLength": 1 },
+              "knowledge_git_remote": { "type": "string" },
+              "knowledge_active_branch": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 1 },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "path", "note"],
+                  "properties": {
+                    "type": { "type": "string", "enum": ["file"] },
+                    "path": { "type": "string", "minLength": 1 },
+                    "note": { "type": "string", "minLength": 1 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

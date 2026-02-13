@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/state.schema.json",
+  "title": "Lane A Evidence State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "stage", "evidence_state", "next_action"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "NEEDS_INDEX",
+        "NEEDS_SCAN",
+        "NEEDS_KICKOFF",
+        "REFRESH_NEEDED",
+        "DECISION_NEEDED",
+        "DECISION_ANSWERED",
+        "COMMITTEE_PENDING",
+        "COMMITTEE_REPO_FAILED",
+        "COMMITTEE_REPO_PASSED",
+        "COMMITTEE_INTEGRATION_FAILED",
+        "COMMITTEE_PASSED",
+        "READY_FOR_WRITER"
+      ]
+    },
+    "evidence_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_level",
+        "scan_coverage_complete",
+        "minimum_sufficient",
+        "milestone_status",
+        "last_scan_at",
+        "last_index_at",
+        "last_synth_at",
+        "pending_events"
+      ],
+      "properties": {
+        "evidence_level": { "type": "string", "enum": ["none", "partial", "complete"] },
+        "scan_coverage_complete": { "type": "boolean" },
+        "minimum_sufficient": { "type": "boolean" },
+        "milestone_status": { "type": "object" },
+        "last_scan_at": { "type": ["string", "null"] },
+        "last_index_at": { "type": ["string", "null"] },
+        "last_synth_at": { "type": ["string", "null"] },
+        "pending_events": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "next_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target_repos", "reason"],
+      "properties": {
+        "type": { "type": "string", "enum": ["index", "scan", "refresh", "kickoff", "committee", "synthesize", "question", "ready"] },
+        "target_repos": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

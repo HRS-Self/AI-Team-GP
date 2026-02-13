@@ -1,0 +1,2 @@
+Before doing anything, read and follow /ai/BOOTSTRAP.md.
+Acknowledge when done.

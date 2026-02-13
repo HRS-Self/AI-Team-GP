@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/evidence_refs.schema.jsonl",
+  "$comment": "This file is a JSON Schema for a JSONL stream: each line is a JSON object that MUST validate against evidence_ref.schema.json.",
+  "type": "object",
+  "$ref": "evidence_ref.schema.json"
+}
+

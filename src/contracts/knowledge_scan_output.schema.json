@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/knowledge_scan_output.schema.json",
+  "title": "Knowledge Scan Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["repo_id", "scanned_at", "facts", "unknowns", "contradictions", "scan_version", "coverage", "external_knowledge"],
+  "properties": {
+    "repo_id": { "type": "string", "minLength": 1 },
+    "scanned_at": { "type": "string", "pattern": "^[0-9]{8}_[0-9]{9}$" },
+    "scan_version": { "type": "integer", "minimum": 1 },
+    "external_knowledge": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["project_code", "repo_id", "bundle_id", "path", "loaded_at"],
+        "properties": {
+          "project_code": { "type": "string", "minLength": 1 },
+          "repo_id": { "type": "string", "minLength": 1 },
+          "bundle_id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "loaded_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fact_id", "claim", "evidence_ids"],
+        "properties": {
+          "fact_id": { "type": "string", "minLength": 1 },
+          "claim": { "type": "string", "minLength": 1 },
+          "evidence_ids": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["a_fact_id", "b_fact_id", "reason"],
+        "properties": {
+          "a_fact_id": { "type": "string", "minLength": 1 },
+          "b_fact_id": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files_seen", "files_indexed"],
+      "properties": {
+        "files_seen": { "type": "integer", "minimum": 0 },
+        "files_indexed": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

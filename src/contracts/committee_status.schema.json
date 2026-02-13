@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/committee_status.schema.json",
+  "title": "Repo Committee Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "repo_id", "evidence_valid", "blocking_issues", "confidence", "next_action"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "repo_id": { "type": "string", "minLength": 1 },
+    "evidence_valid": { "type": "boolean" },
+    "blocking_issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "evidence_missing", "severity"],
+        "properties": {
+          "id": { "type": "string", "minLength": 8 },
+          "description": { "type": "string", "minLength": 1 },
+          "evidence_missing": { "type": "array", "items": { "type": "string", "minLength": 12 } },
+          "severity": { "type": "string", "enum": ["high", "medium", "low"] }
+        }
+      }
+    },
+    "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+    "next_action": { "type": "string", "enum": ["proceed", "decision_needed", "rescan_needed"] },
+    "degraded": { "type": "boolean" },
+    "degraded_reason": { "type": "string", "enum": ["soft_stale"] },
+    "stale": { "type": "boolean" },
+    "hard_stale": { "type": "boolean" },
+    "staleness": { "type": "object" }
+  }
+}

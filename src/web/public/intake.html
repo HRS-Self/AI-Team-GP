@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Team Web • Intake</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="nav">
+        <div class="left">
+          <strong>AI-Team Web</strong>
+          <a href="/intake" class="active">Intake</a>
+          <a href="/interview">Interview</a>
+          <a href="/projects">Projects</a>
+          <a href="/lane-a/health">Lane A Status</a>
+        </div>
+        <div class="right">
+          <button id="logoutBtn" class="danger">Logout</button>
+        </div>
+      </div>
+
+      <div class="row two">
+        <div class="card">
+          <label for="text">Intake text</label>
+          <textarea id="text" placeholder="Describe the work…"></textarea>
+          <div class="btns" style="margin-top: 12px;">
+            <button id="submitBtn" class="primary">Submit intake</button>
+            <button id="triageBtn">Triage</button>
+            <button id="sweepBtn">Sweep</button>
+            <button id="watchdogBtn">Watchdog</button>
+            <button id="portfolioBtn">Portfolio</button>
+            <button id="ledgerBtn">Ledger (tail)</button>
+          </div>
+          <div class="hint" style="margin-top: 10px;">
+            Intake writes `I-*.md`. Triage/sweep/watchdog advance work deterministically (no apply from here).
+          </div>
+        </div>
+
+        <div class="card">
+          <label>Output</label>
+          <div class="out" id="out"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/ui.js"></script>
+    <script>
+      const out = document.getElementById("out");
+      const text = document.getElementById("text");
+
+      function show(obj) {
+        if (obj && typeof obj === "object" && ("exitCode" in obj || "stdout" in obj || "stderr" in obj)) {
+          out.textContent = window.AI_TEAM_UI.formatCliAction(obj);
+          return;
+        }
+        out.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+      }
+
+      async function api(path, body) {
+        const res = await fetch(path, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          credentials: "include",
+          body: JSON.stringify(body || {})
+        });
+        const json = await res.json().catch(() => ({}));
+        return { status: res.status, ok: res.ok, json };
+      }
+
+      async function apiGet(path) {
+        const res = await fetch(path, { method: "GET", credentials: "include" });
+        const json = await res.json().catch(() => ({}));
+        return { status: res.status, ok: res.ok, json };
+      }
+
+      async function logout() {
+        await api("/api/logout", {});
+        window.location.href = "/login";
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+
+      document.getElementById("submitBtn").addEventListener("click", async () => {
+        const v = text.value || "";
+        if (!v.trim()) return show({ ok: false, message: "Missing intake text" });
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("intake_submit", { text: v });
+        show(r.json);
+      });
+
+      document.getElementById("triageBtn").addEventListener("click", async () => {
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("triage", { limit: 10 });
+        show(r.json);
+      });
+
+      document.getElementById("sweepBtn").addEventListener("click", async () => {
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("sweep", { limit: 10 });
+        show(r.json);
+      });
+
+      document.getElementById("watchdogBtn").addEventListener("click", async () => {
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("watchdog", { limit: 1, "stop-at": "APPLY_APPROVAL_PENDING" });
+        show(r.json);
+      });
+
+      document.getElementById("portfolioBtn").addEventListener("click", async () => {
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("portfolio", {});
+        show(r.json);
+      });
+
+      document.getElementById("ledgerBtn").addEventListener("click", async () => {
+        show("Running…");
+        const r = await apiGet("/api/ledger?lines=80");
+        show(r.json);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI-Team Backlog Seeds v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "project_code", "generated_at", "items"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "project_code": { "type": "string", "minLength": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "seed_id",
+          "title",
+          "summary",
+          "rationale",
+          "phase",
+          "priority",
+          "target_teams",
+          "acceptance_criteria",
+          "dependencies",
+          "ssot_refs",
+          "confidence"
+        ],
+        "properties": {
+          "seed_id": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "rationale": { "type": "string", "minLength": 1 },
+          "phase": { "type": "integer", "minimum": 1 },
+          "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+          "target_teams": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "target_repos": { "type": ["array", "null"], "items": { "type": "string", "minLength": 1 } },
+          "acceptance_criteria": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "dependencies": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["must_run_after", "can_run_in_parallel_with"],
+            "properties": {
+              "must_run_after": { "type": "array", "items": { "type": "string" } },
+              "can_run_in_parallel_with": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "ssot_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-team://schemas/routing.schema.json",
+  "title": "Routing (work-scoped)",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["workId", "selected_teams", "selected_repos", "needs_confirmation", "routing_mode", "target_branch"],
+  "properties": {
+    "workId": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string" },
+    "needs_confirmation": { "type": "boolean" },
+    "reason": { "type": "string" },
+    "routing_mode": {
+      "type": "string",
+      "enum": ["repo_explicit", "repo_ambiguous", "keyword_fallback"]
+    },
+    "selected_teams": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "selected_repos": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "repo_match": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "repo_id": { "type": "string", "minLength": 1 },
+        "match_type": { "type": "string", "minLength": 1 },
+        "matched_token": { "type": "string", "minLength": 1 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["team_id", "matched_hints"],
+        "properties": {
+          "team_id": { "type": "string", "minLength": 1 },
+          "matched_hints": { "type": "array", "items": { "type": "string" } },
+          "ignored_due_to_repo_match": { "type": "boolean" }
+        }
+      }
+    },
+    "target_branch": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "source", "confidence", "valid"],
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "source": { "type": "string", "enum": ["explicit", "default"] },
+        "method": { "type": "string" },
+        "matched_token": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "valid": { "type": "boolean" }
+      }
+    }
+  }
+}
+

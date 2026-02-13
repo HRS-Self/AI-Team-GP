@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RepoPatchPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "work_id",
+    "repo_id",
+    "repo_path",
+    "target_branch",
+    "team_id",
+    "kind",
+    "is_hexa",
+    "derived_from",
+    "intent_summary",
+    "scope",
+    "edits",
+    "commands",
+    "risk",
+    "constraints"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "work_id": { "type": "string", "minLength": 1 },
+    "repo_id": { "type": "string", "minLength": 1 },
+    "repo_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repo path from project config/REPOS.json repos[].path (repo-relative to REPOS.json.base_dir). Must NOT be an absolute filesystem path."
+    },
+    "target_branch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source", "confidence"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "enum": ["routing"] },
+        "confidence": { "type": "number", "const": 1 }
+      }
+    },
+    "team_id": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "minLength": 1 },
+    "is_hexa": { "type": "boolean" },
+    "warnings": {
+      "type": "array",
+      "description": "Non-fatal generator warnings (e.g., command normalization stripped unsafe absolute paths).",
+      "items": { "type": "string" }
+    },
+    "derived_from": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposal_id", "proposal_hash", "proposal_agent_id", "timestamp"],
+      "properties": {
+        "proposal_id": { "type": "string", "minLength": 1 },
+        "proposal_hash": { "type": "string", "minLength": 1 },
+        "proposal_agent_id": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "minLength": 1 }
+      }
+    },
+    "intent_summary": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_paths"],
+      "properties": {
+        "allowed_paths": {
+          "type": "array",
+          "minItems": 0,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "forbidden_paths": {
+          "type": "array",
+          "minItems": 0,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "allowed_ops": {
+          "type": "array",
+          "minItems": 0,
+          "items": { "type": "string", "enum": ["edit", "add", "delete"] }
+        }
+      }
+    },
+    "edits": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "op", "rationale", "patch"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "op": { "type": "string", "enum": ["edit", "add", "delete"] },
+          "rationale": { "type": "string", "minLength": 1 },
+          "patch": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cwd", "package_manager", "install", "lint", "test", "build"],
+      "properties": {
+        "cwd": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative working directory within the repo (default '.'). Must NOT be an absolute filesystem path."
+        },
+        "package_manager": { "type": ["string", "null"], "enum": ["npm", "yarn", "pnpm", null] },
+        "install": { "type": ["string", "null"] },
+        "lint": { "type": ["string", "null"] },
+        "test": { "type": ["string", "null"] },
+        "build": { "type": ["string", "null"] }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "notes"],
+      "properties": {
+        "level": { "type": "string", "enum": ["low", "normal", "high"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_branch_create", "requires_training", "hexa_authoring_mode", "blockly_compat_required"],
+      "properties": {
+        "no_branch_create": { "type": "boolean" },
+        "requires_training": { "type": "boolean" },
+        "hexa_authoring_mode": { "type": ["string", "null"], "enum": ["recipe", "cooked_code", null] },
+        "blockly_compat_required": { "type": ["boolean", "null"] }
+      }
+    }
+  }
+}

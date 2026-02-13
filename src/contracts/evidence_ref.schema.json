@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/evidence_ref.schema.json",
+  "title": "Evidence Reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["evidence_id", "repo_id", "file_path", "commit_sha", "extractor", "captured_at"],
+  "properties": {
+    "evidence_id": { "type": "string", "minLength": 8 },
+    "repo_id": { "type": "string", "minLength": 1 },
+    "file_path": { "type": "string", "minLength": 1 },
+    "commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "start_line": { "type": "integer", "minimum": 1 },
+    "end_line": { "type": "integer", "minimum": 1 },
+    "symbol": { "type": "string", "minLength": 1 },
+    "extractor": { "type": "string", "minLength": 1 },
+    "captured_at": { "type": "string", "format": "date-time" }
+  },
+  "oneOf": [
+    { "required": ["start_line", "end_line"] },
+    { "required": ["symbol"] }
+  ]
+}
+

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "teams": [
+    {
+      "team_id": "BackendPlatform",
+      "description": "Shared/platform backends outside Core/GD/IDP (e.g., Notification, VPS glue, utilities).",
+      "scope_hints": [
+        "notification",
+        "message",
+        "msg",
+        "ntf",
+        "vps",
+        "glue",
+        "integration",
+        "webhook",
+        "scheduler",
+        "cron",
+        "common",
+        "shared",
+        "base",
+        "library",
+        "util",
+        "sdk"
+      ],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "DevOps",
+      "description": "CI/CD, deployment, and infrastructure automation.",
+      "scope_hints": ["devops", "ci", "cd", "github actions", "pipeline", "deploy", "terraform", "helm", "k8s"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "FrontendApp",
+      "description": "Standard frontend applications (non-DP), including portals, dashboards, landing pages, and signup apps.",
+      "scope_hints": ["frontend", "frontend app", "dashboard", "signup", "landing", "seo", "nextjs", "next.js", "react", "ui", "portal", "customer portal"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "Mobile",
+      "description": "Mobile applications (React Native and native Android).",
+      "scope_hints": ["mobile", "react native", "rn", "android", "kotlin", "gradle"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "QA",
+      "description": "Quality assurance, automated testing, and validation.",
+      "scope_hints": ["qa", "test", "tests", "e2e", "integration", "regression"],
+      "risk_level": "normal"
+    }
+  ]
+}
+

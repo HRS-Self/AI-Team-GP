@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Team Web • Lane A</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="lane-shell">
+    <div class="wrap lane-wrap">
+      <div class="nav">
+        <div class="left">
+          <strong>AI-Team Web</strong>
+          <a href="/lane-a" class="active">Lane A</a>
+          <a href="/lane-b">Lane B</a>
+          <a href="/bridge">Bridge</a>
+          <a href="/lane-a/health">Lane A Status</a>
+        </div>
+        <div class="right">
+          <span id="projectCode" class="hint"></span>
+          <button id="logoutBtn" class="danger">Logout</button>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>Status</h2>
+        <div id="statusContent" class="hint">Loading status…</div>
+      </section>
+
+      <section class="card">
+        <div id="laneTabs" class="tab-row"></div>
+        <div id="workflowContent"></div>
+      </section>
+
+      <section class="card">
+        <h2>Logs & Artifacts</h2>
+        <div id="artifactLinks"></div>
+      </section>
+
+      <section class="card">
+        <h2>Command Output</h2>
+        <div class="out" id="commandOutput"></div>
+      </section>
+    </div>
+
+    <div id="commandModal" class="modal hidden">
+      <div class="modal-card card">
+        <h3 id="commandModalTitle">Run Command</h3>
+        <div id="commandModalBody" class="modal-body"></div>
+        <div class="btns">
+          <button id="commandModalRun" class="primary">Run</button>
+          <button id="commandModalCancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a href="/lane-a" class="active">Lane A</a>
+      <a href="/lane-b">Lane B</a>
+      <a href="/bridge">Bridge</a>
+    </nav>
+
+    <script src="/static/ui.js"></script>
+    <script>
+      window.LANE_PAGE_CONFIG = {
+        lane: "lane_a",
+        tabs: ["Status", "Interview", "Committee", "Meetings", "Approvals"],
+      };
+    </script>
+    <script src="/static/lane-pages.js"></script>
+  </body>
+</html>

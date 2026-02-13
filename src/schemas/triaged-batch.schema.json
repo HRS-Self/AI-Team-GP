@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TriagedBatch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "batch_id", "raw_intake_id", "created_at", "triaged_ids", "repo_ids", "status"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "batch_id": { "type": "string", "minLength": 1 },
+    "raw_intake_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "triaged_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "repo_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "status": { "type": "string", "enum": ["triaged", "swept"] }
+  }
+}

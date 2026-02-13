@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ssot_references",
+    "summary",
+    "understanding_of_requirements",
+    "proposed_approach",
+    "likely_files_or_areas_impacted",
+    "risks_and_mitigations",
+    "questions_or_clarifications_needed",
+    "suggested_validation"
+  ],
+  "properties": {
+    "ssot_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["doc", "section", "rule_id"],
+        "properties": {
+          "doc": { "type": "string" },
+          "section": { "type": "string" },
+          "rule_id": { "type": "string" }
+        }
+      }
+    },
+    "summary": { "type": "string" },
+    "understanding_of_requirements": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "proposed_approach": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "likely_files_or_areas_impacted": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risks_and_mitigations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "questions_or_clarifications_needed": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "suggested_validation": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

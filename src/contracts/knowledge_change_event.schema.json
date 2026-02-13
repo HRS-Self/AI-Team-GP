@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/knowledge_change_event.schema.json",
+  "title": "Knowledge Change Event (Lane B -> Lane A)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "event_id", "type", "scope", "repo_id", "work_id", "pr_number", "commit", "artifacts", "summary", "timestamp"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "event_id": { "type": "string", "minLength": 8 },
+    "type": { "type": "string", "enum": ["merge", "ci_fix", "schema_change", "api_change", "config_change"] },
+    "scope": { "type": "string", "pattern": "^(system|repo:[A-Za-z0-9._-]+)$" },
+    "repo_id": { "type": ["string", "null"] },
+    "work_id": { "type": "string", "minLength": 1 },
+    "pr_number": { "type": ["number", "null"] },
+    "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paths", "fingerprints"],
+      "properties": {
+        "paths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "fingerprints": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" }
+  }
+}
+

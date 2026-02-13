@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/decision_packet.schema.json",
+  "title": "Decision Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "decision_id", "scope", "trigger", "blocking_state", "context", "questions", "assumptions_if_unanswered", "created_at", "status"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "type": { "type": "string", "enum": ["INVARIANT_WAIVER"] },
+    "decision_id": { "type": "string", "minLength": 8 },
+    "scope": { "type": "string", "pattern": "^(system|repo:[A-Za-z0-9._-]+)$" },
+    "trigger": { "type": "string", "enum": ["repo_committee", "integration_committee", "state_machine"] },
+    "blocking_state": { "type": "string", "minLength": 1 },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "why_automation_failed", "what_is_known"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "why_automation_failed": { "type": "string", "minLength": 1 },
+        "what_is_known": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "expected_answer_type", "constraints", "blocks"],
+        "properties": {
+          "id": { "type": "string", "minLength": 8 },
+          "question": { "type": "string", "minLength": 1 },
+          "expected_answer_type": { "type": "string", "enum": ["text", "choice", "boolean", "reference"] },
+          "constraints": { "type": "string" },
+          "blocks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "answer": {},
+          "answered_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "assumptions_if_unanswered": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "answered_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["open", "answered"] }
+  }
+}

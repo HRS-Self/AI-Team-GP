@@ -1,0 +1,10 @@
+{
+      "version": 1,
+      "project_key": "example",
+      "docs_repo_path": "/opt/AI-Projects/example/knowledge",
+      "knowledge_repo_path": "/opt/AI-Projects/example/knowledge",
+      "output_format": "markdown",
+      "parts_word_target": 1800,
+      "max_docs_per_run": 3,
+      "commit": { "enabled": true, "branch": "main", "allow_dirty": false }
+}

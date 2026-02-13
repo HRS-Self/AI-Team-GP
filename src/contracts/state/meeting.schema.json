@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/state/meeting.schema.json",
+  "title": "Lane A Knowledge Review Meeting",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "meeting_id",
+    "project_root",
+    "scope",
+    "status",
+    "knowledge_version_target",
+    "inputs",
+    "question_cursor",
+    "asked_count",
+    "answered_count",
+    "created_at",
+    "updated_at",
+    "closed_at",
+    "closed_decision"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "meeting_id": { "type": "string", "minLength": 3 },
+    "project_root": { "type": "string", "minLength": 1, "pattern": "^/" },
+    "scope": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["open", "waiting_for_answer", "ready_to_close", "closed"] },
+    "knowledge_version_target": { "type": "string", "minLength": 2 },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coverage_path",
+        "sufficiency_path",
+        "committee_status_path",
+        "open_decisions",
+        "integration_gaps",
+        "staleness"
+      ],
+      "properties": {
+        "coverage_path": { "type": "string", "minLength": 1 },
+        "sufficiency_path": { "type": "string", "minLength": 1 },
+        "committee_status_path": { "type": "string", "minLength": 1 },
+        "open_decisions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "integration_gaps": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "staleness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["stale", "reasons"],
+          "properties": {
+            "stale": { "type": "boolean" },
+            "reasons": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        }
+      }
+    },
+    "question_cursor": { "type": "integer", "minimum": 0 },
+    "asked_count": { "type": "integer", "minimum": 0 },
+    "answered_count": { "type": "integer", "minimum": 0 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "closed_at": { "type": ["string", "null"], "format": "date-time" },
+    "closed_decision": { "type": ["string", "null"] }
+  }
+}
+

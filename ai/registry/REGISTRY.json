@@ -1,0 +1,51 @@
+{
+  "version": 2,
+  "host_id": "unknown",
+  "created_at": "2026-02-12T10:26:57.771Z",
+  "updated_at": "2026-02-12T10:26:57.808Z",
+  "ports": {
+    "webui_base": 38001,
+    "webui_next": 38002,
+    "websvc_base": 37001,
+    "websvc_next": 37002
+  },
+  "projects": [
+    {
+      "project_code": "qadmin",
+      "status": "active",
+      "root_dir": "/opt/AI-Projects/qadmin",
+      "ops_dir": "/opt/AI-Projects/qadmin/ops",
+      "repos_dir": "/opt/AI-Projects/qadmin/repos",
+      "created_at": "2026-02-12T10:26:57.808Z",
+      "updated_at": "2026-02-12T10:26:57.808Z",
+      "ports": {
+        "webui_port": 38001,
+        "websvc_port": 37001
+      },
+      "pm2": {
+        "ecosystem_path": "/opt/AI-Projects/qadmin/ops/pm2/ecosystem.config.cjs",
+        "apps": [
+          "qadmin-webui",
+          "qadmin-websvc"
+        ]
+      },
+      "cron": {
+        "installed": true,
+        "entries": [
+          "*/5 * * * * cd /opt/GitRepos/AI-Team && AI_PROJECT_ROOT=/opt/AI-Projects/qadmin/ops node /opt/GitRepos/AI-Team/src/cli.js --watchdog --limit 1 --watchdog-ci true --watchdog-prepr true",
+          "*/5 * * * * cd /opt/GitRepos/AI-Team && AI_PROJECT_ROOT=/opt/AI-Projects/qadmin/ops node /opt/GitRepos/AI-Team/src/cli.js --lane-a-orchestrate --limit 1",
+          "*/10 * * * * cd /opt/GitRepos/AI-Team && AI_PROJECT_ROOT=/opt/AI-Projects/qadmin/ops node /opt/GitRepos/AI-Team/src/cli.js --knowledge-refresh-from-events --projectRoot /opt/AI-Projects/qadmin/ops --stop-on-error"
+        ]
+      },
+      "knowledge": {
+        "type": "git",
+        "abs_path": "/opt/AI-Projects/qadmin/knowledge",
+        "git_remote": "",
+        "default_branch": "main",
+        "active_branch": "main",
+        "last_commit_sha": null
+      },
+      "repos": []
+    }
+  ]
+}

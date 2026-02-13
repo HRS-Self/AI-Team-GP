@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/state/phase.schema.json",
+  "title": "Lane A Reverse/Forward Phase State (Ops-only)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "projectRoot", "current_phase", "reverse", "forward", "prereqs"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "projectRoot": { "type": "string", "minLength": 1 },
+    "current_phase": { "type": "string", "enum": ["reverse", "forward"] },
+    "reverse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "session_id", "started_at", "closed_at", "closed_by", "notes"],
+      "properties": {
+        "status": { "type": "string", "enum": ["not_started", "in_progress", "closed"] },
+        "session_id": { "type": ["string", "null"] },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "closed_at": { "type": ["string", "null"], "format": "date-time" },
+        "closed_by": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "forward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "session_id", "started_at", "closed_at", "closed_by", "notes"],
+      "properties": {
+        "status": { "type": "string", "enum": ["not_started", "in_progress", "closed"] },
+        "session_id": { "type": ["string", "null"] },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "closed_at": { "type": ["string", "null"], "format": "date-time" },
+        "closed_by": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "prereqs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scan_complete",
+        "sufficiency",
+        "human_confirmed_v1",
+        "human_confirmed_at",
+        "human_confirmed_by",
+        "human_notes"
+      ],
+      "properties": {
+        "scan_complete": { "type": "boolean" },
+        "sufficiency": { "type": "string", "enum": ["unknown", "insufficient", "sufficient"] },
+        "human_confirmed_v1": { "type": "boolean" },
+        "human_confirmed_at": { "type": ["string", "null"], "format": "date-time" },
+        "human_confirmed_by": { "type": ["string", "null"] },
+        "human_notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
+

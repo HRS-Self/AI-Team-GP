@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/integration_status.schema.json",
+  "title": "Integration Chair Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "evidence_valid", "integration_gaps", "decision_needed"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "evidence_valid": { "type": "boolean" },
+    "integration_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "repos", "description", "evidence_refs", "severity"],
+        "properties": {
+          "id": { "type": "string", "minLength": 8 },
+          "repos": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "severity": { "type": "string", "enum": ["high", "medium", "low"] }
+        }
+      }
+    },
+    "decision_needed": { "type": "boolean" },
+    "degraded": { "type": "boolean" },
+    "degraded_reason": { "type": "string", "enum": ["soft_stale"] },
+    "stale": { "type": "boolean" },
+    "hard_stale": { "type": "boolean" },
+    "staleness": { "type": "object" }
+  }
+}

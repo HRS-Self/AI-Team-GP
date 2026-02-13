@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/knowledge_event.schema.json",
+  "title": "Knowledge Event",
+  "type": "object",
+  "oneOf": [
+    {
+      "title": "Lane B -> Lane A repo change",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "type", "repo_id", "merge_commit", "changed_files", "timestamp"],
+      "properties": {
+        "event_id": { "type": "string", "minLength": 8 },
+        "type": { "type": "string", "enum": ["merge_applied", "api_changed", "behavior_changed"] },
+        "repo_id": { "type": "string", "minLength": 1 },
+        "merge_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "changed_files": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    {
+      "title": "Decision answered",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "type", "decision_id", "scope", "timestamp"],
+      "properties": {
+        "event_id": { "type": "string", "minLength": 8 },
+        "type": { "type": "string", "const": "decision_answered" },
+        "decision_id": { "type": "string", "minLength": 8 },
+        "scope": { "type": "string", "pattern": "^(system|repo:[A-Za-z0-9._-]+)$" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  ]
+}

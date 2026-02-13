@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Team Web • Login</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="nav">
+        <div class="left"><strong>AI-Team Web</strong></div>
+        <div class="right"><span class="hint">Passcode required</span></div>
+      </div>
+
+      <div class="row">
+        <div class="card">
+          <label for="passcode">Passcode</label>
+          <input id="passcode" type="password" autocomplete="current-password" placeholder="Enter passcode" />
+          <div class="btns" style="margin-top: 12px;">
+            <button id="loginBtn" class="primary">Login</button>
+          </div>
+          <div id="msg" class="hint" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="out" id="out" style="margin-top: 10px; min-height: 140px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const pass = document.getElementById("passcode");
+      const out = document.getElementById("out");
+      const msg = document.getElementById("msg");
+      const btn = document.getElementById("loginBtn");
+
+      function setOut(t) {
+        out.textContent = t || "";
+      }
+      function setMsg(t, isErr) {
+        msg.textContent = t || "";
+        msg.className = isErr ? "hint err" : "hint";
+      }
+
+      async function login() {
+        btn.disabled = true;
+        setMsg("");
+        setOut("");
+        try {
+          const res = await fetch("/api/login", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            credentials: "include",
+            body: JSON.stringify({ passcode: pass.value })
+          });
+          const json = await res.json().catch(() => ({}));
+          setOut(JSON.stringify(json, null, 2));
+          if (res.ok && json.ok) {
+            setMsg("Logged in. Redirecting…", false);
+            window.location.href = "/intake";
+          } else {
+            setMsg(json.message || "Login failed", true);
+          }
+        } catch (e) {
+          setMsg(String(e), true);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      btn.addEventListener("click", login);
+      pass.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") login();
+      });
+    </script>
+  </body>
+</html>

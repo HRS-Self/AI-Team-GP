@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Team Web • Interview</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="nav">
+        <div class="left">
+          <strong>AI-Team Web</strong>
+          <a href="/intake">Intake</a>
+          <a href="/interview" class="active">Interview</a>
+          <a href="/projects">Projects</a>
+          <a href="/lane-a/health">Lane A Status</a>
+        </div>
+        <div class="right">
+          <span id="projectKey" class="hint"></span>
+          <button id="logoutBtn" class="danger">Logout</button>
+        </div>
+      </div>
+
+      <div class="row two">
+        <div class="card">
+          <label for="scope">Scope</label>
+          <input id="scope" type="text" value="system" placeholder="system or repo:<repo_id> (e.g. repo:dp-frontend-portal)" />
+          <div class="btns" style="margin-top: 12px;">
+            <button id="startBtn">Start</button>
+            <button id="refreshBtn">Refresh state</button>
+          </div>
+
+          <label for="answer" style="margin-top: 14px;">Your session text</label>
+          <textarea id="answer" placeholder="Paste your answers here…"></textarea>
+          <div class="btns" style="margin-top: 12px;">
+            <button id="sendBtn" class="primary">Send</button>
+          </div>
+          <div class="hint" style="margin-top: 10px;">
+            The interview writes canonical notes to the configured knowledge git repo (project-scoped under `knowledge/`).
+          </div>
+        </div>
+
+        <div class="card">
+          <label>Output / State</label>
+          <div class="out" id="out"></div>
+        </div>
+      </div>
+
+      <div class="row two" style="margin-top: 14px;">
+        <div class="card">
+          <label>Knowledge pipeline</label>
+          <div class="hint">Repo scavenging + system synthesis (Lane A; writes only to knowledge repo).</div>
+          <div class="btns" style="margin-top: 12px;">
+            <button id="scanAllBtn" class="primary">Scan all repos</button>
+            <button id="synthesizeBtn">Synthesize system</button>
+            <button id="knowledgeRefreshBtn">Refresh status</button>
+          </div>
+
+          <label for="repoSelect" style="margin-top: 14px;">Scan single repo</label>
+          <select id="repoSelect"></select>
+          <div class="btns" style="margin-top: 12px;">
+            <button id="scanRepoBtn">Scan repo</button>
+          </div>
+
+          <hr style="margin: 16px 0;" />
+
+          <label>Lane A phases (reverse → forward)</label>
+          <div class="hint">Forward kickoff is blocked until reverse is closed, scan is complete, sufficiency is sufficient, and v1 is confirmed.</div>
+
+          <label for="byName" style="margin-top: 12px;">By (human)</label>
+          <input id="byName" type="text" placeholder="Your name" />
+          <label for="phaseNotes" style="margin-top: 12px;">Notes (optional)</label>
+          <textarea id="phaseNotes" placeholder="Optional notes…"></textarea>
+
+          <div class="btns" style="margin-top: 12px;">
+            <button id="phaseRefreshBtn">Refresh phase</button>
+            <button id="confirmV1Btn">Confirm v1</button>
+            <button id="closeReverseBtn">Close reverse</button>
+            <button id="closeForwardBtn">Close forward</button>
+          </div>
+
+          <label for="kickoffText" style="margin-top: 14px;">Kickoff intent text (non-interactive)</label>
+          <textarea id="kickoffText" placeholder="Paste kickoff intent (JSON or text)…"></textarea>
+          <div class="btns" style="margin-top: 12px;">
+            <button id="kickoffReverseBtn">Kickoff reverse</button>
+            <button id="kickoffForwardBtn">Kickoff forward</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <label>Knowledge status</label>
+          <div class="out" id="knowledgeOut"></div>
+
+          <label style="margin-top: 14px;">Lane A phase status</label>
+          <div class="out" id="phaseOut"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/ui.js"></script>
+    <script>
+      const out = document.getElementById("out");
+      const kout = document.getElementById("knowledgeOut");
+      const pout = document.getElementById("phaseOut");
+      const scope = document.getElementById("scope");
+      const answer = document.getElementById("answer");
+      const repoSelect = document.getElementById("repoSelect");
+      const byName = document.getElementById("byName");
+      const phaseNotes = document.getElementById("phaseNotes");
+      const kickoffText = document.getElementById("kickoffText");
+
+      function show(obj) {
+        if (obj && typeof obj === "object" && ("exitCode" in obj || "stdout" in obj || "stderr" in obj)) {
+          out.textContent = window.AI_TEAM_UI.formatCliAction(obj);
+          return;
+        }
+        out.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+      }
+
+      function showKnowledge(obj) {
+        if (obj && typeof obj === "object" && obj.action && obj.status) {
+          const actionText = window.AI_TEAM_UI.formatCliAction(obj.action);
+          const statusText = window.AI_TEAM_UI.formatKnowledgeStatus(obj.status);
+          kout.textContent = `Action\n${actionText}\n\nStatus\n${statusText}`;
+          return;
+        }
+        kout.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+      }
+
+      function showPhase(obj) {
+        if (!pout) return;
+        pout.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+      }
+
+      async function api(path, body) {
+        const res = await fetch(path, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          credentials: "include",
+          body: JSON.stringify(body || {})
+        });
+        const json = await res.json().catch(() => ({}));
+        return { status: res.status, ok: res.ok, json };
+      }
+
+      async function apiGet(path) {
+        const res = await fetch(path, { method: "GET", credentials: "include" });
+        const json = await res.json().catch(() => ({}));
+        return { status: res.status, ok: res.ok, json };
+      }
+
+      async function logout() {
+        await api("/api/logout", {});
+        window.location.href = "/login";
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+
+      document.getElementById("startBtn").addEventListener("click", async () => {
+        const s = (scope.value || "").trim();
+        if (!s) return show({ ok: false, message: "Missing scope" });
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_interview", { scope: s, start: true });
+        show(r.json);
+      });
+
+      document.getElementById("sendBtn").addEventListener("click", async () => {
+        const s = (scope.value || "").trim();
+        const t = answer.value || "";
+        if (!s) return show({ ok: false, message: "Missing scope" });
+        if (!t.trim()) return show({ ok: false, message: "Missing text" });
+        show("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_interview", { scope: s, continue: true, session: t });
+        show(r.json);
+      });
+
+      document.getElementById("refreshBtn").addEventListener("click", async () => {
+        const s = (scope.value || "").trim();
+        if (!s) return show({ ok: false, message: "Missing scope" });
+        show("Loading…");
+        const r = await apiGet(`/api/interview/state?scope=${encodeURIComponent(s)}`);
+        show(r.json);
+      });
+
+      async function refreshKnowledgeStatus() {
+        showKnowledge("Loading…");
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_status", { json: true });
+        const status = r && r.json && r.json.result && typeof r.json.result === "object" ? r.json.result : null;
+        showKnowledge({ action: r.json, status });
+        if (r.ok && status && Array.isArray(status.repos) && repoSelect) {
+          const repos = status.repos.map((x) => x.repo_id).filter(Boolean);
+          repoSelect.innerHTML = "";
+          for (const id of repos) {
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = id;
+            repoSelect.appendChild(opt);
+          }
+        }
+      }
+
+      async function getKnowledgeStatus() {
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_status", { json: true });
+        const status = r && r.json && r.json.result && typeof r.json.result === "object" ? r.json.result : null;
+        if (r.ok && status && Array.isArray(status.repos) && repoSelect) {
+          const repos = status.repos.map((x) => x.repo_id).filter(Boolean);
+          repoSelect.innerHTML = "";
+          for (const id of repos) {
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = id;
+            repoSelect.appendChild(opt);
+          }
+        }
+        return { ...r, statusJson: status };
+      }
+
+      document.getElementById("knowledgeRefreshBtn").addEventListener("click", refreshKnowledgeStatus);
+
+      async function runKnowledgeActionWithPolling(actionPromise) {
+        let stopped = false;
+        const poll = setInterval(async () => {
+          if (stopped) return;
+          const st = await window.AI_TEAM_UI.runWebCommand("knowledge_status", { json: true });
+          const status = st && st.json && st.json.result && typeof st.json.result === "object" ? st.json.result : null;
+          showKnowledge({ action: { ok: true, exitCode: 0, stdout: "Running…", stderr: "", timedOut: false, result_json: null }, status });
+        }, 2000);
+        try {
+          const action = await actionPromise;
+          const st = await getKnowledgeStatus();
+          showKnowledge({ action: action.json, status: st.statusJson });
+        } finally {
+          stopped = true;
+          clearInterval(poll);
+        }
+      }
+
+      document.getElementById("scanAllBtn").addEventListener("click", async () => {
+        showKnowledge("Running… (polling status)");
+        await runKnowledgeActionWithPolling(window.AI_TEAM_UI.runWebCommand("knowledge_refresh", { concurrency: 4 }));
+      });
+
+      document.getElementById("synthesizeBtn").addEventListener("click", async () => {
+        showKnowledge("Running… (polling status)");
+        await runKnowledgeActionWithPolling(window.AI_TEAM_UI.runWebCommand("knowledge_synthesize", {}));
+      });
+
+      document.getElementById("scanRepoBtn").addEventListener("click", async () => {
+        const id = repoSelect && repoSelect.value ? String(repoSelect.value) : "";
+        if (!id) return showKnowledge({ ok: false, message: "Missing repo_id" });
+        showKnowledge("Running… (polling status)");
+        await runKnowledgeActionWithPolling(window.AI_TEAM_UI.runWebCommand("knowledge_scan", { repo: id }));
+      });
+
+      async function refreshPhaseStatus() {
+        showPhase("Loading…");
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_phase_status", { json: true });
+        showPhase(r.json && r.json.result ? r.json.result : r.json);
+      }
+
+      document.getElementById("phaseRefreshBtn").addEventListener("click", refreshPhaseStatus);
+
+      document.getElementById("confirmV1Btn").addEventListener("click", async () => {
+        const by = byName && byName.value ? String(byName.value).trim() : "";
+        if (!by) return showPhase({ ok: false, message: "Missing by" });
+        showPhase("Running…");
+        const notes = phaseNotes && phaseNotes.value ? String(phaseNotes.value) : "";
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_confirm_v1", { by, notes });
+        showPhase(r.json);
+        await refreshPhaseStatus();
+      });
+
+      document.getElementById("closeReverseBtn").addEventListener("click", async () => {
+        const by = byName && byName.value ? String(byName.value).trim() : "";
+        if (!by) return showPhase({ ok: false, message: "Missing by" });
+        showPhase("Running…");
+        const notes = phaseNotes && phaseNotes.value ? String(phaseNotes.value) : "";
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_phase_close", { phase: "reverse", by, notes });
+        showPhase(r.json);
+        await refreshPhaseStatus();
+      });
+
+      document.getElementById("closeForwardBtn").addEventListener("click", async () => {
+        const by = byName && byName.value ? String(byName.value).trim() : "";
+        if (!by) return showPhase({ ok: false, message: "Missing by" });
+        showPhase("Running…");
+        const notes = phaseNotes && phaseNotes.value ? String(phaseNotes.value) : "";
+        const r = await window.AI_TEAM_UI.runWebCommand("knowledge_phase_close", { phase: "forward", by, notes });
+        showPhase(r.json);
+        await refreshPhaseStatus();
+      });
+
+      async function kickoff(action) {
+        const s = (scope.value || "").trim() || "system";
+        const t = kickoffText && kickoffText.value ? String(kickoffText.value) : "";
+        if (!t.trim()) return showPhase({ ok: false, message: "Missing kickoff text" });
+        showPhase("Running…");
+        const r = await window.AI_TEAM_UI.runWebCommand(action, {
+          scope: s,
+          start: true,
+          "non-interactive": true,
+          "input-file": t,
+        });
+        showPhase(r.json);
+        await refreshPhaseStatus();
+      }
+
+      document.getElementById("kickoffReverseBtn").addEventListener("click", async () => kickoff("knowledge_kickoff_reverse"));
+      document.getElementById("kickoffForwardBtn").addEventListener("click", async () => kickoff("knowledge_kickoff_forward"));
+
+      (async function loadProjectKey() {
+        const el = document.getElementById("projectKey");
+        if (!el) return;
+        el.textContent = "Project: …";
+        const r = await apiGet("/api/project");
+        if (r.ok && r.json && r.json.project_key) {
+          el.textContent = `Project: ${r.json.project_key}`;
+        } else {
+          el.textContent = "Project: (unknown)";
+        }
+      })();
+
+      refreshKnowledgeStatus();
+      refreshPhaseStatus();
+    </script>
+  </body>
+</html>

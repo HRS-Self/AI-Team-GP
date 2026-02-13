@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-team.local/contracts/dependency_graph_override.schema.json",
+  "title": "Lane A Dependency Graph Override",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "updated_at", "status", "approved_by", "approved_at", "notes", "overrides"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["pending", "approved"] },
+    "approved_by": { "type": ["string", "null"] },
+    "approved_at": { "type": ["string", "null"], "format": "date-time" },
+    "notes": { "type": ["string", "null"] },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["remove_edges", "add_edges", "external_projects"],
+      "properties": {
+        "remove_edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from_repo_id", "to_repo_id"],
+            "properties": {
+              "from_repo_id": { "type": "string", "minLength": 1 },
+              "to_repo_id": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "add_edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from_repo_id", "to_repo_id", "reason", "evidence"],
+            "properties": {
+              "from_repo_id": { "type": "string", "minLength": 1 },
+              "to_repo_id": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 1 },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "path", "note"],
+                  "properties": {
+                    "type": { "type": "string", "enum": ["file"] },
+                    "path": { "type": "string", "minLength": 1 },
+                    "note": { "type": "string", "minLength": 1 }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "external_projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["project_code", "knowledge_repo_dir", "repos", "reason"],
+            "properties": {
+              "project_code": { "type": "string", "minLength": 1 },
+              "knowledge_repo_dir": { "type": "string", "minLength": 1 },
+              "repos": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+              "reason": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

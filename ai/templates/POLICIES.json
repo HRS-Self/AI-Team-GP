@@ -1,0 +1,91 @@
+{
+      "version": 1,
+      "merge_strategy": "deep_merge",
+      "approval": {
+            "require_clean_patch_plan": true,
+            "auto_approve": {
+                  "enabled": false,
+                  "allowed_teams": ["FrontendApp", "FrontendDP"],
+                  "allowed_kinds": ["App", "Package"],
+                  "disallowed_risk_levels": ["high"],
+                  "require_clean_patch_plan": true
+            }
+      },
+      "apply": {
+            "allow_instruction_mode": false,
+            "validation_mode": "local_optional",
+            "push_to_origin": false,
+            "ci_check": {
+                  "enabled": false,
+                  "timeout_ms": 1200000,
+                  "poll_ms": 15000
+            }
+      },
+      "checks": {
+            "missing_script_behavior": "skip",
+            "require_lockfile_for_ci": true,
+            "node_install_default": "install",
+            "require_repo_root_preflight": true,
+            "local": {
+                  "lint": "required",
+                  "test": "skip",
+                  "build": "skip",
+                  "timeout_seconds": 600
+            }
+      },
+      "scheduler": {
+            "max_items_per_run": 3,
+            "max_active_per_repo": 1
+      },
+      "selectors": [
+            {
+                  "match": { "IsHexa": true },
+                  "apply": ["hexa_default"]
+            },
+            {
+                  "match": { "repo_id": "tms-frontend-staticpages" },
+                  "apply": ["staticpages_default"]
+            },
+            {
+                  "match": { "repo_id": "dp-portal" },
+                  "apply": ["dp_frontend_default"]
+            }
+      ],
+      "named": {
+            "hexa_default": {
+                  "HexaPolicy": {
+                        "layers": {
+                              "Cell": { "editable": false },
+                              "Recipe": {
+                                    "editable": true,
+                                    "authoring_modes": ["blockly", "hand"],
+                                    "hand_edit_breaks_blockly": true
+                              },
+                              "CookedCode": {
+                                    "editable": true,
+                                    "authoring_modes": ["hand"]
+                              }
+                        },
+                        "branches": {
+                              "authoritative": "Pre-Compile",
+                              "generated_dev": "Compiled-Nest-DEV",
+                              "generated_ppc": "Compiled-Nest-PPC"
+                        },
+                        "environments": ["DEV", "PPC", "UAT", "PROD"],
+                        "generated_branches_editable": false,
+                        "codegen_tool_repo_id": "hivejs"
+                  }
+            },
+            "staticpages_default": {
+                  "BuildPolicy": {
+                        "build_mode": "composed_into",
+                        "host_repo_id": "dp-portal",
+                        "build_in_host": true,
+                        "merge_method": "ci"
+                  }
+            },
+            "dp_frontend_default": {
+                  "BuildPolicy": { "build_mode": "standalone" }
+            }
+      }
+}

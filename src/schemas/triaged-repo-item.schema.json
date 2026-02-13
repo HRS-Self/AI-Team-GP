@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TriagedRepoItem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "triaged_id", "raw_intake_id", "created_at", "repo_id", "team_id", "target_branch", "summary", "instructions", "dedupe_key"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "triaged_id": { "type": "string", "minLength": 1 },
+    "raw_intake_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "repo_id": { "type": "string", "minLength": 1 },
+    "team_id": { "type": "string", "minLength": 1 },
+    "target_branch": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "instructions": { "type": "string", "minLength": 1 },
+    "dedupe_key": { "type": "string", "minLength": 1 }
+  }
+}

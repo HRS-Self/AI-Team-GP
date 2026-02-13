@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PatchPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "assumptions",
+    "files_to_change",
+    "step_by_step_patch_plan",
+    "tests_and_validation_commands",
+    "risk_notes_and_rollback_plan",
+    "open_questions_or_blockers"
+  ],
+  "properties": {
+    "summary": { "type": "string" },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "files_to_change": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "why"],
+        "properties": {
+          "path": { "type": "string" },
+          "why": { "type": "string" },
+          "evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "step_by_step_patch_plan": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tests_and_validation_commands": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risk_notes_and_rollback_plan": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "open_questions_or_blockers": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "teams": [
+    {
+      "team_id": "FrontendApp",
+      "description": "Standard frontend applications (non-DP), including portals, dashboards, landing pages, and signup apps.",
+      "scope_hints": ["frontend", "frontend app", "dashboard", "signup", "landing", "seo", "nextjs", "next.js", "react", "ui", "portal", "customer portal"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "FrontendDP",
+      "description": "Dynamic Portal frontend host and DP UI libraries (DP_* frontends).",
+      "scope_hints": ["dp", "dynamic portal", "dynamic pages", "micro frontend", "component json", "dp json", "dp portal", "dp ui", "ui kit", "ui-kit", "iconpack", "design system", "component library"],
+      "risk_level": "normal"
+    }
+  ]
+}
+

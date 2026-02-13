@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "teams": [
+    {
+      "team_id": "BackendTMSCore",
+      "description": "Backend services and APIs for the TMS Core domain (Core)",
+      "scope_hints": ["backend", "api", "service", "endpoint", "controller", "nest", "database", "tms", "core", "ruleengine"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "BackendGD",
+      "description": "Global Definition backend services and APIs (GD domain).",
+      "scope_hints": ["gd", "global definition", "definition", "signup", "tenant", "media", "catalog"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "BackendPlatform",
+      "description": "Shared/platform backends outside Core/GD/IDP (e.g., Notification, VPS glue, utilities).",
+      "scope_hints": ["notification", "message", "msg", "ntf", "vps", "glue", "integration", "webhook", "scheduler", "cron", "common", "shared", "base", "library", "util", "sdk"],
+      "risk_level": "normal"
+    },
+    {
+      "team_id": "IdentitySecurity",
+      "description": "Identity provider, authentication/authorization, and security boundaries.",
+      "scope_hints": ["idp", "identity", "auth", "oauth", "oidc", "sso", "token", "jwt", "encryption", "crypto", "key"],
+      "risk_level": "high"
+    }
+  ]
+}
+
