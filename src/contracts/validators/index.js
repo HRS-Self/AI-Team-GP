@@ -20,3 +20,8 @@ export { validatePhaseState } from "./validate-phase.js";
 export { validateProjectRegistry } from "./validate-project-registry.js";
 export { validateDependencyGraph } from "./validate-dependency-graph.js";
 export { validateDependencyGraphOverride } from "./validate-dependency-graph-override.js";
+export { validatePromptEngineerPlan } from "./validate-prompt-engineer-plan.js";
+export { validateSkillsRegistry } from "./validate-skills-registry.js";
+export { validateProjectSkills } from "./validate-project-skills.js";
+export { validateSkillPackage } from "./validate-skill-package.js";
+export { validateSkillsGovernanceStatus } from "./validate-skills-governance-status.js";

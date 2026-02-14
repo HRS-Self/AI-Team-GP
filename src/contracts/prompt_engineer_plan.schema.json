@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prompt_engineer_plan.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "role", "created_at", "scope", "decision", "prompt_delta", "notes"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "role": {
+      "const": "prompt_engineer"
+    },
+    "created_at": {
+      "type": "string",
+      "pattern": "Z$"
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^(system|repo:[A-Za-z0-9._-]+)$"
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skills_to_load", "skills_missing", "reasoning_style", "risk"],
+      "properties": {
+        "skills_to_load": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "skills_missing": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reasoning_style": {
+          "type": "string",
+          "enum": ["strict", "balanced"]
+        },
+        "risk": {
+          "type": "string",
+          "enum": ["low", "normal", "high", "critical", "unknown"]
+        }
+      }
+    },
+    "prompt_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system_append", "developer_append", "user_append", "forbidden_inclusions"],
+      "properties": {
+        "system_append": { "type": "string" },
+        "developer_append": { "type": "string" },
+        "user_append": { "type": "string" },
+        "forbidden_inclusions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "text"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["warning", "info", "blocker"]
+          },
+          "text": { "type": "string" }
+        }
+      }
+    }
+  }
+}

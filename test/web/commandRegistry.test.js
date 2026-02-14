@@ -45,6 +45,19 @@ test("command registry exposes expected WebUI commands only", () => {
     "--lane-b-events-list",
     "--knowledge-events-status",
     "--ssot-drift-check",
+    "--project-skills-status",
+    "--skills-list",
+    "--skills-show",
+    "--project-skills-allow",
+    "--project-skills-deny",
+    "--skills-draft",
+    "--skills-refresh",
+    "--skills-governance",
+    "--skills-approve",
+    "--skills-reject",
   ];
   for (const cmd of mustInclude) assert.equal(exposedSet.has(cmd), true, `Missing exposed command ${cmd}`);
+
+  const mustNotExpose = ["--initial-project", "--list-projects", "--show-project-detail", "--remove-project", "--migrate-project-layout"];
+  for (const cmd of mustNotExpose) assert.equal(exposedSet.has(cmd), false, `Unexpected exposed command ${cmd}`);
 });

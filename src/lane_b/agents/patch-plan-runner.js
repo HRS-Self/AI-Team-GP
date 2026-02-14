@@ -10,6 +10,7 @@ import { hasRg, scanWithRgInRoots, scanFallbackInRoots, discoverPackageScriptsIn
 import { resolveStatePath } from "../../project/state-paths.js";
 import { updateWorkStatus, writeGlobalStatusFromPortfolio } from "../../utils/status-writer.js";
 import { writeWorkPlan, readBundleIfExists } from "../../utils/plan-writer.js";
+import { maybeAugmentLlmMessagesWithSkills } from "../../llm/prompt-augment.js";
 
 function sha256Hex(text) {
   return createHash("sha256").update(String(text || ""), "utf8").digest("hex");
@@ -189,16 +190,30 @@ function validatePatchPlanJson(obj) {
 
 async function generateJsonWithRetries({ llm, systemPrompt, userPrompt }) {
   const attempts = [];
+  const baseMessages = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ];
+  const augmented = await maybeAugmentLlmMessagesWithSkills({
+    baseMessages,
+    projectRoot: process.env.AI_PROJECT_ROOT || null,
+    input: {
+      scope: "system",
+      base_system: String(systemPrompt || ""),
+      base_prompt: String(userPrompt || ""),
+      context: { role: "lane_b.patch_plan" },
+      constraints: { output: "json_only" },
+      knowledge_snippets: [],
+    },
+  });
+  const invokeMessages = augmented.messages;
   if (!llm) {
     return { ok: false, attempts: [{ attempt: 0, raw: "LLM unavailable.", error: "LLM unavailable." }] };
   }
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     let response;
     try {
-      response = await llm.invoke([
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ]);
+      response = await llm.invoke(invokeMessages);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       attempts.push({ attempt, raw: "", error: `LLM invocation failed: ${msg}` });

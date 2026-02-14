@@ -85,6 +85,14 @@ export async function loadProjectPaths({ projectRoot = null } = {}) {
       locksAbs: join(laneAAbs, "locks"),
       locksStatusAbs: join(laneAAbs, "locks", "status"),
       lockPathAbs: join(laneAAbs, "locks", "lane-a-orchestrate.lock.json"),
+      skillsDirAbs: join(laneAAbs, "skills"),
+      projectSkillsAbs: join(laneAAbs, "skills", "PROJECT_SKILLS.json"),
+      skillsGovernanceAbs: join(laneAAbs, "skills", "governance"),
+      skillsGovernanceStatusJsonAbs: join(laneAAbs, "skills", "governance", "status.json"),
+      skillsGovernanceStatusMdAbs: join(laneAAbs, "skills", "governance", "status.md"),
+      skillsGovernanceCandidatesAbs: join(laneAAbs, "skills", "governance", "candidates"),
+      skillsGovernanceApprovalsAbs: join(laneAAbs, "skills", "governance", "approvals"),
+      skillsGovernanceRunsAbs: join(laneAAbs, "skills", "governance", "runs"),
       stalenessAbs: join(laneAAbs, "staleness"),
       softStaleTrackerAbs: join(laneAAbs, "staleness", "soft_stale_tracker.json"),
       decisionPacketsAbs: join(laneAAbs, "decision_packets"),
@@ -143,6 +151,7 @@ export async function loadProjectPaths({ projectRoot = null } = {}) {
   assertNoCrossLanePathOverlap(paths.laneA.rootAbs, paths.laneB.rootAbs);
   assertNoCrossLanePathOverlap(paths.laneA.logsAbs, paths.laneB.logsAbs);
   assertNoCrossLanePathOverlap(paths.laneA.locksAbs, paths.laneB.rootAbs);
+  assertNoCrossLanePathOverlap(paths.laneA.skillsGovernanceAbs, paths.laneB.rootAbs);
 
   return paths;
 }
@@ -153,6 +162,7 @@ export async function ensureLaneADirs({ projectRoot = null } = {}) {
     p.laneA.locksAbs,
     p.laneA.locksStatusAbs,
     p.laneA.stalenessAbs,
+    p.laneA.skillsDirAbs,
     p.laneA.decisionPacketsAbs,
     p.laneA.logsAbs,
     p.laneA.scansRawAbs,
@@ -192,6 +202,31 @@ export async function laneALockPath({ projectRoot = null } = {}) {
 export async function laneALockStatusDir({ projectRoot = null } = {}) {
   const p = await loadProjectPaths({ projectRoot });
   return p.laneA.locksStatusAbs;
+}
+
+export async function laneAProjectSkillsDirAbs({ projectRoot = null } = {}) {
+  const p = await loadProjectPaths({ projectRoot });
+  return p.laneA.skillsDirAbs;
+}
+
+export async function laneAProjectSkillsAbs({ projectRoot = null } = {}) {
+  const p = await loadProjectPaths({ projectRoot });
+  return p.laneA.projectSkillsAbs;
+}
+
+export async function laneASkillsGovernanceDirAbs({ projectRoot = null } = {}) {
+  const p = await loadProjectPaths({ projectRoot });
+  return p.laneA.skillsGovernanceAbs;
+}
+
+export async function laneASkillsGovernanceStatusJsonAbs({ projectRoot = null } = {}) {
+  const p = await loadProjectPaths({ projectRoot });
+  return p.laneA.skillsGovernanceStatusJsonAbs;
+}
+
+export async function laneASkillsGovernanceStatusMdAbs({ projectRoot = null } = {}) {
+  const p = await loadProjectPaths({ projectRoot });
+  return p.laneA.skillsGovernanceStatusMdAbs;
 }
 
 export async function ensureLaneBDirs({ projectRoot = null } = {}) {

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skills_governance_status.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "projectRoot",
+    "captured_at",
+    "env",
+    "skills",
+    "drafts",
+    "approvals",
+    "candidates_created_this_run",
+    "drafts_created_this_run"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "projectRoot": { "type": "string", "minLength": 1 },
+    "captured_at": { "type": "string", "pattern": "Z$" },
+    "env": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "draft_daily_cap",
+        "min_reuse_repos",
+        "min_evidence_refs",
+        "auto_author",
+        "require_approval"
+      ],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "draft_daily_cap": { "type": "integer", "minimum": 0 },
+        "min_reuse_repos": { "type": "integer", "minimum": 1 },
+        "min_evidence_refs": { "type": "integer", "minimum": 1 },
+        "auto_author": { "type": "boolean" },
+        "require_approval": { "type": "boolean" }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "known", "stale"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "known": { "type": "array", "items": { "type": "string" } },
+        "stale": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "drafts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pending", "published", "refresh_pending"],
+      "properties": {
+        "pending": { "type": "array", "items": { "type": "string" } },
+        "published": { "type": "array", "items": { "type": "string" } },
+        "refresh_pending": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approved", "rejected"],
+      "properties": {
+        "approved": { "type": "array", "items": { "type": "string" } },
+        "rejected": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "candidates_created_this_run": { "type": "integer", "minimum": 0 },
+    "drafts_created_this_run": { "type": "integer", "minimum": 0 },
+    "notes": { "type": "string" }
+  }
+}

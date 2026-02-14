@@ -31,6 +31,13 @@ function runGitInit(repoAbs) {
       return { ok: r.status === 0, stderr: String(r.stderr || '') };
 }
 
+function runGitBareInit(repoAbs) {
+      const r = spawnSync('git', ['init', '--bare', '-q', repoAbs], {
+            encoding: 'utf8',
+      });
+      return { ok: r.status === 0, stderr: String(r.stderr || '') };
+}
+
 test('project registry initializes when missing', async () => {
       const regDir = mkdtempSync(join(tmpdir(), 'ai-team-registry-'));
       process.env.AI_TEAM_REGISTRY_DIR = regDir;
@@ -188,6 +195,79 @@ test('initial-project writes registry entry with ports and paths (no real cronta
       } finally {
             delete process.env.AI_TEAM_REGISTRY_DIR;
             delete process.env.AI_TEAM_PROJECTS_ROOT;
+      }
+});
+
+test('initial-project records cloned repos into registry project.repos', async () => {
+      const regDir = mkdtempSync(
+            join(tmpdir(), 'ai-team-registry-init-repos-'),
+      );
+      const projectsRoot = mkdtempSync(
+            join(tmpdir(), 'ai-team-projects-root-repos-'),
+      );
+      const remotesRoot = mkdtempSync(join(tmpdir(), 'ai-team-remotes-'));
+      const codeRemote = join(remotesRoot, 'code-repo.git');
+      const bare = runGitBareInit(codeRemote);
+      assert.equal(bare.ok, true, bare.stderr);
+
+      process.env.AI_TEAM_REGISTRY_DIR = regDir;
+      process.env.AI_TEAM_PROJECTS_ROOT = projectsRoot;
+      process.env.AI_TEAM_CODE_REPO_PATHS = codeRemote;
+      try {
+            const toolAbs = repoRootAbs();
+            const system = {
+                  git: {
+                        initIfMissing(repoAbs) {
+                              return runGitInit(repoAbs);
+                        },
+                        ensureSafeDirectory() {
+                              return { ok: true, wrote: false };
+                        },
+                        ensureOriginIfProvided() {
+                              return {
+                                    ok: true,
+                                    remote: '',
+                                    default_branch: 'main',
+                                    created: false,
+                              };
+                        },
+                        headSha() {
+                              return null;
+                        },
+                  },
+                  cron: {
+                        installBlock({ entries }) {
+                              return { ok: true, installed: true, entries };
+                        },
+                  },
+            };
+
+            const res = await runInitialProjectOnboarding({
+                  toolRepoRoot: toolAbs,
+                  dryRun: false,
+                  project: 'alpha-repos',
+                  nonInteractive: true,
+                  system,
+            });
+            assert.equal(res.ok, true);
+
+            const reg = JSON.parse(
+                  readFileSync(join(regDir, 'REGISTRY.json'), 'utf8'),
+            );
+            const p = reg.projects.find((x) => x.project_code === 'alpha-repos');
+            assert.ok(p);
+            assert.equal(Array.isArray(p.repos), true);
+            assert.equal(p.repos.length, 1);
+            assert.equal(p.repos[0].repo_id, 'code-repo');
+            assert.equal(p.repos[0].active, true);
+            assert.ok(
+                  typeof p.repos[0].abs_path === 'string' &&
+                        p.repos[0].abs_path.endsWith('/repos/code-repo'),
+            );
+      } finally {
+            delete process.env.AI_TEAM_REGISTRY_DIR;
+            delete process.env.AI_TEAM_PROJECTS_ROOT;
+            delete process.env.AI_TEAM_CODE_REPO_PATHS;
       }
 });
 

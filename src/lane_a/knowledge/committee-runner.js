@@ -4,6 +4,7 @@ import { cpus } from "node:os";
 import { basename, isAbsolute, join, resolve } from "node:path";
 
 import { createLlmClient } from "../../llm/client.js";
+import { maybeAugmentLlmMessagesWithSkills } from "../../llm/prompt-augment.js";
 import { loadLlmProfiles, resolveLlmProfileOrError } from "../../llm/llm-profiles.js";
 import { loadProjectPaths } from "../../paths/project-paths.js";
 import { loadRepoRegistry, resolveRepoAbsPath } from "../../utils/repo-registry.js";
@@ -50,6 +51,33 @@ function scopeToDirName(parsedScope) {
   if (parsedScope.kind === "system") return "system";
   if (parsedScope.kind === "repo") return `repo_${String(parsedScope.repo_id || "unknown")}`;
   return "unknown_scope";
+}
+
+async function buildAugmentedCommitteeMessages({
+  paths,
+  scope,
+  systemPrompt,
+  userPrompt,
+  context = null,
+} = {}) {
+  const userText = typeof userPrompt === "string" ? userPrompt : JSON.stringify(userPrompt || {});
+  const baseMessages = [
+    { role: "system", content: String(systemPrompt || "") },
+    { role: "user", content: userText },
+  ];
+  const augmented = await maybeAugmentLlmMessagesWithSkills({
+    baseMessages,
+    projectRoot: paths?.opsRootAbs || null,
+    input: {
+      scope,
+      base_system: String(systemPrompt || ""),
+      base_prompt: userText,
+      context: context && typeof context === "object" ? context : {},
+      constraints: { output: "json_only", role: "committee" },
+      knowledge_snippets: [],
+    },
+  });
+  return augmented.messages;
 }
 
 async function resolveLaneAPhaseForCommittee({ paths }) {
@@ -667,10 +695,14 @@ async function runRepoCommittee({ paths, reposJson, repoId, dryRun, bundleId = n
     evidence_bundle: evidence.map((e) => ({ evidence_id: e.evidence_id, file_path: e.file_path, start_line: e.start_line, end_line: e.end_line, excerpt: e.excerpt })),
   };
 
-  const archResp = await archClient.llm.invoke([
-    { role: "system", content: architectSystem },
-    { role: "user", content: JSON.stringify(architectUser) },
-  ]);
+  const archMessages = await buildAugmentedCommitteeMessages({
+    paths,
+    scope: `repo:${repoId}`,
+    systemPrompt: architectSystem,
+    userPrompt: JSON.stringify(architectUser),
+    context: { role: "committee.repo_architect", repo_id: repoId },
+  });
+  const archResp = await archClient.llm.invoke(archMessages);
 
   let architectOut = null;
   try {
@@ -742,10 +774,14 @@ async function runRepoCommittee({ paths, reposJson, repoId, dryRun, bundleId = n
     kickoff_repo: kickoff.repo && kickoff.repo.inputs ? kickoff.repo.inputs : null,
   };
 
-  const skResp = await skepticClient.llm.invoke([
-    { role: "system", content: skepticSystem },
-    { role: "user", content: JSON.stringify(skepticUser) },
-  ]);
+  const skepticMessages = await buildAugmentedCommitteeMessages({
+    paths,
+    scope: `repo:${repoId}`,
+    systemPrompt: skepticSystem,
+    userPrompt: JSON.stringify(skepticUser),
+    context: { role: "committee.repo_skeptic", repo_id: repoId },
+  });
+  const skResp = await skepticClient.llm.invoke(skepticMessages);
 
   let skepticOut = null;
   try {
@@ -1026,10 +1062,14 @@ async function runIntegrationChair({ paths, activeRepoIds, dryRun, bundleId = nu
     repo_committees: repoSummaries,
   };
 
-  const resp = await chairClient.llm.invoke([
-    { role: "system", content: systemPrompt },
-    { role: "user", content: JSON.stringify(user) },
-  ]);
+  const chairMessages = await buildAugmentedCommitteeMessages({
+    paths,
+    scope: "system",
+    systemPrompt,
+    userPrompt: JSON.stringify(user),
+    context: { role: "committee.integration_chair", scope: "system" },
+  });
+  const resp = await chairClient.llm.invoke(chairMessages);
 
   const created_at = nowISO();
   const outDirAbs = join(paths.knowledge.ssotSystemAbs, "committee", "integration");
@@ -1212,10 +1252,14 @@ async function runQaStrategistCommittee({ paths, reposJson, parsedScope, bundleI
     payload.active_repo_ids = listActiveRepoIds(reposJson);
   }
 
-  const resp = await client.llm.invoke([
-    { role: "system", content: systemPrompt },
-    { role: "user", content: JSON.stringify(payload) },
-  ]);
+  const strategistMessages = await buildAugmentedCommitteeMessages({
+    paths,
+    scope: expectedScope,
+    systemPrompt,
+    userPrompt: JSON.stringify(payload),
+    context: { role: "committee.qa_strategist", scope: expectedScope },
+  });
+  const resp = await client.llm.invoke(strategistMessages);
 
   const out = parseAndValidateQaCommitteeOutput({ rawText: resp?.content, expectedScope });
 

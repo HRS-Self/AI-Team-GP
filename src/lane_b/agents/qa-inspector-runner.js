@@ -12,6 +12,7 @@ import { resolveStatePath } from "../../project/state-paths.js";
 import { updateWorkStatus, writeGlobalStatusFromPortfolio } from "../../utils/status-writer.js";
 import { ensureWorkSsotBundle, renderSsotExcerptsForLlm } from "../../ssot/work-ssot-bundle.js";
 import { normalizeLlmContentToText } from "../../llm/content.js";
+import { maybeAugmentLlmMessagesWithSkills } from "../../llm/prompt-augment.js";
 
 function sha256Hex(text) {
   return createHash("sha256").update(String(text || ""), "utf8").digest("hex");
@@ -263,10 +264,22 @@ export async function runQaInspector({ repoRoot, workId, teamsCsv = null, limit 
 
     let content;
     try {
-      const res = await llm.invoke([
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ]);
+      const augmented = await maybeAugmentLlmMessagesWithSkills({
+        baseMessages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        projectRoot: process.env.AI_PROJECT_ROOT || null,
+        input: {
+          scope: `repo:${repoId}`,
+          base_system: String(systemPrompt || ""),
+          base_prompt: String(userPrompt || ""),
+          context: { role: "lane_b.qa_inspector", workId, repo_id: repoId, team_id: teamId },
+          constraints: { output: "json_only" },
+          knowledge_snippets: [],
+        },
+      });
+      const res = await llm.invoke(augmented.messages);
       const norm = normalizeLlmContentToText(res?.content);
       content = norm.text;
     } catch (err) {

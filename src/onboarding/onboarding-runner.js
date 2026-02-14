@@ -65,6 +65,39 @@ function normalizeRepoId(raw) {
       return s;
 }
 
+function buildRegistryReposFromConfig({
+      projectCode,
+      reposRootAbs,
+      reposDoc,
+} = {}) {
+      const code = normStr(projectCode);
+      const root = normStr(reposRootAbs);
+      const repos = Array.isArray(reposDoc?.repos) ? reposDoc.repos : [];
+      const out = [];
+      for (const repo of repos) {
+            const repo_id = normStr(repo?.repo_id);
+            if (!repo_id) continue;
+            const relPath = normStr(repo?.path) || repo_id;
+            const active_branch =
+                  normStr(repo?.active_branch) ||
+                  normStr(repo?.default_branch) ||
+                  'main';
+            const default_branch =
+                  normStr(repo?.default_branch) || active_branch || 'main';
+            const status = normStr(repo?.status).toLowerCase();
+            out.push({
+                  repo_id,
+                  owner_repo: normStr(repo?.owner_repo) || `${code}/${repo_id}`,
+                  abs_path: resolve(root, relPath),
+                  default_branch,
+                  active_branch,
+                  last_seen_head_sha: null,
+                  active: status ? status === 'active' : true,
+            });
+      }
+      return stableSort(out, (r) => String(r.repo_id));
+}
+
 function isPlainObject(x) {
       return !!x && typeof x === 'object' && !Array.isArray(x);
 }
@@ -1878,9 +1911,19 @@ export async function runInitialProjectOnboarding({
                   cfg,
                   { dryRun },
             );
+            const reposDocToWrite = writeGeneratedConfig
+                  ? reposDocGenerated
+                  : {
+                          version: 1,
+                          repos: clonedRepoDirs.map((r) => ({
+                                repo_id: r.repo_id,
+                                path: r.dir_name,
+                                status: 'active',
+                          })),
+                    };
             const wroteRepos = await writeJsonAtomic(
                   join(opsRootAbs, 'config', 'REPOS.json'),
-                  writeGeneratedConfig ? reposDocGenerated : { version: 1, repos: clonedRepoDirs.map((r) => ({ repo_id: r.repo_id, path: r.dir_name, status: 'active' })) },
+                  reposDocToWrite,
                   { dryRun },
             );
             const wroteTeams = await writeJsonAtomic(
@@ -2125,6 +2168,11 @@ export async function runInitialProjectOnboarding({
                         const lastCommit = dryRun
                               ? null
                               : sys.git.headSha(knowledgeRootAbs);
+                        const registryRepos = buildRegistryReposFromConfig({
+                              projectCode: project_code,
+                              reposRootAbs,
+                              reposDoc: reposDocToWrite,
+                        });
                         const projectRec = {
                               project_code,
                               status: 'active',
@@ -2155,9 +2203,12 @@ export async function runInitialProjectOnboarding({
                                           originRes.default_branch || 'main',
                                     last_commit_sha: lastCommit || null,
                               },
-                              repos: Array.isArray(existing?.repos)
-                                    ? existing.repos
-                                    : [],
+                              repos:
+                                    registryRepos.length > 0
+                                          ? registryRepos
+                                          : Array.isArray(existing?.repos)
+                                            ? existing.repos
+                                            : [],
                         };
 
                         upsertProject(reg, projectRec);

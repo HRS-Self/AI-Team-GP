@@ -10,6 +10,7 @@ import { resolveStatePath, getAIProjectRoot } from "../project/state-paths.js";
 import { resolveSsotBundle } from "../ssot/ssot-resolver.js";
 import { ensureWorkSsotBundle, renderSsotExcerptsForLlm } from "../ssot/work-ssot-bundle.js";
 import { jsonStableStringify } from "../utils/json.js";
+import { maybeAugmentLlmMessagesWithSkills } from "../llm/prompt-augment.js";
 
 function sha256Hex(text) {
   return createHash("sha256").update(String(text || ""), "utf8").digest("hex");
@@ -221,12 +222,26 @@ async function updatePlanWithOptionalReview(planText) {
 
 async function generateReviewWithRetries({ llm, systemPrompt, userPrompt }) {
   const attempts = [];
+  const baseMessages = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ];
+  const augmented = await maybeAugmentLlmMessagesWithSkills({
+    baseMessages,
+    projectRoot: process.env.AI_PROJECT_ROOT || null,
+    input: {
+      scope: "system",
+      base_system: String(systemPrompt || ""),
+      base_prompt: String(userPrompt || ""),
+      context: { role: "lane_b.review" },
+      constraints: { output: "json_only" },
+      knowledge_snippets: [],
+    },
+  });
+  const invokeMessages = augmented.messages;
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const response = await llm.invoke([
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ]);
+    const response = await llm.invoke(invokeMessages);
 
     const raw = typeof response?.content === "string" ? response.content : String(response?.content ?? "");
     let parsed = null;

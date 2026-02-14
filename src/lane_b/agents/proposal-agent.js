@@ -1,3 +1,5 @@
+import { maybeAugmentLlmMessagesWithSkills } from "../../llm/prompt-augment.js";
+
 function clipText(text, maxChars) {
   const s = String(text || "");
   if (s.length <= maxChars) return s;
@@ -153,12 +155,26 @@ export function proposalJsonToMarkdown({ workId, teamId, agentId, proposal, evid
 
 export async function generateProposalWithRetries({ llm, systemPrompt, userPrompt }) {
   const attempts = [];
+  const baseMessages = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ];
+  const augmented = await maybeAugmentLlmMessagesWithSkills({
+    baseMessages,
+    projectRoot: process.env.AI_PROJECT_ROOT || null,
+    input: {
+      scope: "system",
+      base_system: String(systemPrompt || ""),
+      base_prompt: String(userPrompt || ""),
+      context: { role: "lane_b.proposal" },
+      constraints: { output: "json_only" },
+      knowledge_snippets: [],
+    },
+  });
+  const invokeMessages = augmented.messages;
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const response = await llm.invoke([
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ]);
+    const response = await llm.invoke(invokeMessages);
 
     const raw = typeof response?.content === "string" ? response.content : String(response?.content ?? "");
     let parsed = null;

@@ -57,6 +57,17 @@ function usage() {
             '  node src/cli.js --remove-project --project <project_code> [--keep-files true|false] [--dry-run]',
             '  node src/cli.js --project-repos-sync --projectRoot <abs> [--dry-run]',
             '  node src/cli.js --initial-project --project <project_code> [--non-interactive] [--dry-run]',
+            '  node src/cli.js --skills-list [--json] [--all true|false]',
+            '  node src/cli.js --skills-show --skill <skill_id> [--max-lines <n>] [--json]',
+            '  node src/cli.js --project-skills-status --projectRoot <abs> [--json]',
+            '  node src/cli.js --project-skills-allow --projectRoot <abs> (--skill "<id>"|--skills "a,b,c") --by "<name>" [--notes "..."] [--dry-run]',
+            '  node src/cli.js --project-skills-deny --projectRoot <abs> (--skill "<id>"|--skills "a,b") --by "<name>" [--notes "..."] [--dry-run]',
+            '  node src/cli.js --skills-draft --projectRoot <abs> --scope (repo:<id>|system) [--dry-run]',
+            '  node src/cli.js --skills-author --projectRoot <abs> --draft "<draft_id>" [--dry-run]',
+            '  node src/cli.js --skills-refresh --projectRoot <abs> [--dry-run]',
+            '  node src/cli.js --skills-governance --projectRoot <abs> [--run] [--status] [--json] [--dry-run]',
+            '  node src/cli.js --skills-approve --projectRoot <abs> (--draft "<draft_id>"|--session "<draft_id>") --by "<name>" [--notes "..."] [--dry-run]',
+            '  node src/cli.js --skills-reject --projectRoot <abs> (--draft "<draft_id>"|--session "<draft_id>") --by "<name>" [--notes "..."] [--dry-run]',
             '  node src/cli.js --knowledge-deps-approve --projectRoot <abs> --by "<name>" [--notes "..."] [--dry-run]',
             '  node src/cli.js --migrate-project-layout [--dry-run]   # migrate legacy /opt/AI-Projects/<code> -> /opt/AI-Projects/<code>/{ops,repos,knowledge}',
             '  node src/cli.js --knowledge-interview --projectRoot <abs> --scope (repo:<repo_id>|system) (--start|--continue) [--session "..."] [--max-questions N] [--dry-run]',
@@ -1683,6 +1694,373 @@ export async function orchestrateFromArgs(argv) {
                         process.stdout.write('(no merge events)\n');
             }
             process.exit(result.ok ? 0 : 1);
+      }
+
+      if (
+            args['skills-list'] ||
+            args['skills-show'] ||
+            args['project-skills-status'] ||
+            args['project-skills-allow'] ||
+            args['project-skills-deny'] ||
+            args['skills-draft'] ||
+            args['skills-author'] ||
+            args['skills-refresh'] ||
+            args['skills-governance'] ||
+            args['skills-approve'] ||
+            args['skills-reject']
+      ) {
+            const asJson = !!args.json;
+            const aiTeamRepoRoot =
+                  typeof process.env.AI_TEAM_REPO === 'string' &&
+                  process.env.AI_TEAM_REPO.trim()
+                        ? resolve(process.env.AI_TEAM_REPO.trim())
+                        : null;
+            const {
+                  listGlobalSkills,
+                  showSkill,
+                  readProjectSkillsStatus,
+                  updateProjectSkillsAllowlist,
+            } = await import('../skills/skills-admin.js');
+            const { runSkillsDraft } = await import('../lane_a/skills/skills-draft.js');
+            const { runSkillsAuthor } = await import('../lane_a/skills/skill-author.js');
+            const { runSkillsRefresh } = await import('../lane_a/skills/skills-refresh.js');
+            const { runSkillsGovernance, writeSkillsGovernanceApproval } =
+                  await import('../lane_a/skills/skills-governance.js');
+
+            const parseBoolArg = (value, fallback = false) => {
+                  if (value === true) return true;
+                  if (typeof value !== 'string') return fallback;
+                  const v = value.trim().toLowerCase();
+                  if (!v) return fallback;
+                  if (
+                        v === '1' ||
+                        v === 'true' ||
+                        v === 'yes' ||
+                        v === 'on'
+                  )
+                        return true;
+                  if (
+                        v === '0' ||
+                        v === 'false' ||
+                        v === 'no' ||
+                        v === 'off'
+                  )
+                        return false;
+                  return fallback;
+            };
+
+            if (args['skills-list']) {
+                  const includeDeprecated = parseBoolArg(args.all, false);
+                  const result = await listGlobalSkills({
+                        aiTeamRepoRoot,
+                        includeDeprecated,
+                  });
+                  if (asJson) {
+                        process.stdout.write(
+                              `${JSON.stringify(result, null, 2)}\n`,
+                        );
+                  } else {
+                        process.stdout.write(
+                              `updated_at: ${result.updated_at}\n`,
+                        );
+                        for (const s of result.skills || []) {
+                              process.stdout.write(
+                                    `${s.skill_id}\t${s.status}\t${s.title}\t${s.path}\n`,
+                              );
+                        }
+                        if (!Array.isArray(result.skills) || !result.skills.length)
+                              process.stdout.write('(no skills)\n');
+                  }
+                  process.exit(0);
+            }
+
+            if (args['skills-show']) {
+                  const skillId =
+                        typeof args.skill === 'string' && args.skill.trim()
+                              ? args.skill.trim()
+                              : null;
+                  const maxLinesRaw =
+                        typeof args['max-lines'] === 'string' &&
+                        args['max-lines'].trim()
+                              ? args['max-lines'].trim()
+                              : null;
+                  const maxLinesParsed = maxLinesRaw
+                        ? Number.parseInt(maxLinesRaw, 10)
+                        : null;
+                  const maxLines =
+                        Number.isInteger(maxLinesParsed) &&
+                        maxLinesParsed > 0
+                              ? maxLinesParsed
+                              : 80;
+                  if (!skillId) {
+                        process.stderr.write(
+                              `${usage()}\n\nMissing --skill <skill_id>.\n`,
+                        );
+                        process.exit(2);
+                  }
+                  try {
+                        const result = await showSkill({
+                              aiTeamRepoRoot,
+                              skillId,
+                              maxLines,
+                        });
+                        if (asJson)
+                              process.stdout.write(
+                                    `${JSON.stringify(result, null, 2)}\n`,
+                              );
+                        else {
+                              process.stdout.write(
+                                    `skill_id: ${result.skill_id}\npath: ${result.path}\nsha256: ${result.sha256}\n`,
+                              );
+                              process.stdout.write(
+                                    `---\n${result.preview}\n`,
+                              );
+                              if (result.truncated)
+                                    process.stdout.write(
+                                          `\n[truncated: showing first ${Math.min(
+                                                80,
+                                                Number(result.total_lines) || 80,
+                                          )} of ${result.total_lines} lines]\n`,
+                                    );
+                        }
+                        process.exit(0);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            const projectRootRaw =
+                  typeof args.projectRoot === 'string' && args.projectRoot.trim()
+                        ? args.projectRoot.trim()
+                        : getAIProjectRoot({ required: false }) ||
+                          inferProjectRootFromCwd();
+            if (!projectRootRaw) {
+                  process.stderr.write(
+                        `${usage()}\n\nMissing --projectRoot (and could not infer from AI_PROJECT_ROOT/CWD).\n`,
+                  );
+                  process.exit(2);
+            }
+            const projectRoot = resolve(projectRootRaw);
+            const dryRun = !!args['dry-run'];
+
+            if (args['skills-draft']) {
+                  const scope =
+                        typeof args.scope === 'string' && args.scope.trim()
+                              ? args.scope.trim()
+                              : null;
+                  if (!scope) {
+                        process.stderr.write(
+                              `${usage()}\n\nMissing --scope (expected system or repo:<id>).\n`,
+                        );
+                        process.exit(2);
+                  }
+                  try {
+                        const result = await runSkillsDraft({
+                              projectRoot,
+                              scope,
+                              dryRun,
+                        });
+                        process.stdout.write(
+                              `${JSON.stringify(result, null, 2)}\n`,
+                        );
+                        process.exit(result.ok ? 0 : 1);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            if (args['skills-author']) {
+                  const draftId =
+                        typeof args.draft === 'string' && args.draft.trim()
+                              ? args.draft.trim()
+                              : null;
+                  if (!draftId) {
+                        process.stderr.write(
+                              `${usage()}\n\nMissing --draft <draft_id>.\n`,
+                        );
+                        process.exit(2);
+                  }
+                  try {
+                        const result = await runSkillsAuthor({
+                              projectRoot,
+                              draftId,
+                              aiTeamRepoRoot,
+                              dryRun,
+                        });
+                        process.stdout.write(
+                              `${JSON.stringify(result, null, 2)}\n`,
+                        );
+                        process.exit(result.ok ? 0 : 1);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            if (args['skills-refresh']) {
+                  try {
+                        const result = await runSkillsRefresh({
+                              projectRoot,
+                              aiTeamRepoRoot,
+                              dryRun,
+                        });
+                        process.stdout.write(
+                              `${JSON.stringify(result, null, 2)}\n`,
+                        );
+                        process.exit(result.ok ? 0 : 1);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            if (args['skills-governance']) {
+                  const shouldRun = !!args.run;
+                  const shouldStatus = !!args.status || !shouldRun;
+                  try {
+                        const result = await runSkillsGovernance({
+                              projectRoot,
+                              run: shouldRun,
+                              status: shouldStatus,
+                              aiTeamRepoRoot,
+                              dryRun,
+                        });
+                        process.stdout.write(
+                              `${JSON.stringify(result, null, 2)}\n`,
+                        );
+                        process.exit(result.ok ? 0 : 1);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            if (args['skills-approve'] || args['skills-reject']) {
+                  const draftId =
+                        typeof args.draft === 'string' && args.draft.trim()
+                              ? args.draft.trim()
+                              : typeof args.session === 'string' &&
+                                args.session.trim()
+                                    ? args.session.trim()
+                              : null;
+                  const by =
+                        typeof args.by === 'string' && args.by.trim()
+                              ? args.by.trim()
+                              : null;
+                  const decision = args['skills-approve']
+                        ? 'approved'
+                        : 'rejected';
+                  if (!draftId || !by) {
+                        process.stderr.write(
+                              `${usage()}\n\nMissing required args: (--draft|--session) and --by.\n`,
+                        );
+                        process.exit(2);
+                  }
+                  const notes =
+                        typeof args.notes === 'string' && args.notes.trim()
+                              ? args.notes.trim()
+                              : '';
+                  try {
+                        const result = await writeSkillsGovernanceApproval({
+                              projectRoot,
+                              draftId,
+                              decision,
+                              by,
+                              notes,
+                              dryRun,
+                        });
+                        process.stdout.write(
+                              `${JSON.stringify(result, null, 2)}\n`,
+                        );
+                        process.exit(result.ok ? 0 : 1);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            if (args['project-skills-status']) {
+                  try {
+                        const result = await readProjectSkillsStatus({
+                              projectRoot,
+                        });
+                        if (asJson)
+                              process.stdout.write(
+                                    `${JSON.stringify(result, null, 2)}\n`,
+                              );
+                        else {
+                              process.stdout.write(
+                                    `projectRoot: ${result.projectRoot}\nproject_skills_path: ${result.path}\nallowed_skills: ${Array.isArray(
+                                          result.skills?.allowed_skills,
+                                    )
+                                          ? result.skills.allowed_skills.join(', ')
+                                          : ''}\n`,
+                              );
+                        }
+                        process.exit(0);
+                  } catch (err) {
+                        process.stderr.write(
+                              `${err instanceof Error ? err.message : String(err)}\n`,
+                        );
+                        process.exit(1);
+                  }
+            }
+
+            const skillsCsv =
+                  typeof args.skills === 'string' && args.skills.trim()
+                        ? args.skills
+                        : typeof args.skill === 'string' && args.skill.trim()
+                              ? args.skill
+                              : null;
+            const by =
+                  typeof args.by === 'string' && args.by.trim()
+                        ? args.by.trim()
+                        : null;
+            if (!skillsCsv || !by) {
+                  process.stderr.write(
+                        `${usage()}\n\nMissing required args: (--skill|--skills) and --by.\n`,
+                  );
+                  process.exit(2);
+            }
+            const notes =
+                  typeof args.notes === 'string' && args.notes.trim()
+                        ? args.notes.trim()
+                        : null;
+            const mode = args['project-skills-allow'] ? 'allow' : 'deny';
+            try {
+                  const result = await updateProjectSkillsAllowlist({
+                        mode,
+                        projectRoot,
+                        aiTeamRepoRoot,
+                        skillsCsv,
+                        by,
+                        notes,
+                        dryRun,
+                  });
+                  process.stdout.write(
+                        `${JSON.stringify(result, null, 2)}\n`,
+                  );
+                  process.exit(result.ok ? 0 : 1);
+            } catch (err) {
+                  process.stderr.write(
+                        `${err instanceof Error ? err.message : String(err)}\n`,
+                  );
+                  process.exit(1);
+            }
       }
 
       if (

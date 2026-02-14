@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project_skills.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "project_code", "updated_at", "allowed_skills"],
+  "properties": {
+    "version": { "const": 1 },
+    "project_code": { "type": "string", "minLength": 1 },
+    "updated_at": { "type": "string", "pattern": "Z$" },
+    "allowed_skills": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$" }
+    },
+    "pinned": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["content_sha256"],
+        "properties": {
+          "content_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

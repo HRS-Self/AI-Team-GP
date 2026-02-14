@@ -331,6 +331,7 @@ async function main() {
     return res.sendFile(resolve(publicDir, "login.html"));
   });
   app.get("/lane-a", auth.authMiddleware, (req, res) => res.sendFile(resolve(publicDir, "lane-a.html")));
+  app.get("/lane-a/skills", auth.authMiddleware, (_req, res) => res.redirect("/lane-a?tab=Skills"));
   app.get("/lane-b", auth.authMiddleware, (req, res) => res.sendFile(resolve(publicDir, "lane-b.html")));
   app.get("/bridge", auth.authMiddleware, (req, res) => res.sendFile(resolve(publicDir, "bridge.html")));
   app.get("/intake", auth.authMiddleware, (req, res) => res.sendFile(resolve(publicDir, "intake.html")));

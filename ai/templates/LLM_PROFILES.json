@@ -1,65 +1,75 @@
 {
-  "version": 1,
-  "profiles": {
-    "planner.code_generation": {
-      "provider": "openai",
-      "model": "gpt-5.2-codex",
-      "options": { "reasoning": "high" }
-    },
-    "architect.interviewer": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "architect.reviewer": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "tech.writer": {
-      "provider": "openai",
-      "model": "gpt-5.1",
-      "options": { "reasoning": "standard" }
-    },
-    "pr.description": {
-      "provider": "openai",
-      "model": "gpt-5.2-mini",
-      "options": { "reasoning": "standard" }
-    },
-    "qa_test_author": {
-      "provider": "openai",
-      "model": "gpt-5.2-codex",
-      "options": { "reasoning": "standard" }
-    },
-    "qa.inspector": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "knowledge_scavenger": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "committee.repo_architect": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "committee.repo_skeptic": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "committee.integration_chair": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    },
-    "committee.qa_strategist": {
-      "provider": "openai",
-      "model": "gpt-5.2",
-      "options": { "reasoning": "high" }
-    }
-  }
+      "version": 1,
+      "profiles": {
+            "planner.code_generation": {
+                  "provider": "openai",
+                  "model": "gpt-5.2-codex",
+                  "options": { "reasoning": "high" }
+            },
+            "architect.interviewer": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "architect.reviewer": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "tech.writer": {
+                  "provider": "openai",
+                  "model": "gpt-5.1",
+                  "options": { "reasoning": "standard" }
+            },
+            "pr.description": {
+                  "provider": "openai",
+                  "model": "gpt-5.2-mini",
+                  "options": { "reasoning": "standard" }
+            },
+            "qa_test_author": {
+                  "provider": "openai",
+                  "model": "gpt-5.2-codex",
+                  "options": { "reasoning": "standard" }
+            },
+            "qa.inspector": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "knowledge_scavenger": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "committee.repo_architect": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "committee.repo_skeptic": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "committee.integration_chair": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "committee.qa_strategist": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            },
+            "skill.author": {
+                  "provider": "openai",
+                  "model": "gpt-5.2-mini",
+                  "options": { "reasoning": "standard" }
+            },
+            "prompt.engineer": {
+                  "provider": "openai",
+                  "model": "gpt-5.2",
+                  "options": { "reasoning": "high" }
+            }
+      }
 }

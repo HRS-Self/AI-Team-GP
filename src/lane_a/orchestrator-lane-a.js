@@ -21,6 +21,7 @@ import { runRepoIndex } from "./knowledge/repo-indexer.js";
 import { runKnowledgeScan } from "./knowledge/knowledge-scan.js";
 import { runRefreshFromEvents } from "./knowledge/knowledge-refresh-from-events.js";
 import { runQaMergeFollowups } from "./events/qa-merge-followups.js";
+import { runSkillsGovernance } from "./skills/skills-governance.js";
 import { assertKickoffLatestShape } from "./knowledge/kickoff-utils.js";
 import { readSufficiencyOrDefault } from "./knowledge/knowledge-sufficiency.js";
 import { evaluateScopeStaleness } from "./lane-a-staleness-policy.js";
@@ -29,6 +30,12 @@ import { handleSoftStaleEscalation } from "./staleness/soft-stale-escalation.js"
 
 function normStr(x) {
   return typeof x === "string" ? x.trim() : "";
+}
+
+function boolFromEnv(name, fallback = false) {
+  const raw = normStr(process.env[name]).toLowerCase();
+  if (!raw) return fallback;
+  return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
 }
 
 function isPlainObject(x) {
@@ -714,6 +721,29 @@ export async function runLaneAOrchestrate({ projectRoot, limit = null, dryRun = 
           ok: false,
           error: err instanceof Error ? err.message : String(err),
         });
+      }
+
+      if (boolFromEnv("ENABLE_SKILLS_GOVERNANCE", false)) {
+        try {
+          const gov = await runSkillsGovernance({
+            projectRoot: paths.opsRootAbs,
+            run: true,
+            status: true,
+            dryRun: false,
+          });
+          logs.push({
+            executed: "skills_governance",
+            ok: !!gov?.ok,
+            wrote: gov?.wrote || null,
+            message: gov?.message || null,
+          });
+        } catch (err) {
+          logs.push({
+            executed: "skills_governance",
+            ok: false,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
       }
     }
 

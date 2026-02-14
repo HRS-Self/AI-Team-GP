@@ -316,3 +316,53 @@ h2, h3 { margin: 0 0 10px; }
   color: var(--muted);
   font-size: 12px;
 }
+
+.skills-stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.skills-card h3,
+.skills-card h4 {
+  margin: 0 0 8px;
+}
+
+.skills-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.skills-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.skills-form-grid label {
+  margin: 0;
+}
+
+.skills-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.skills-preview {
+  max-height: 300px;
+  overflow: auto;
+}
+
+@media (min-width: 900px) {
+  .skills-form-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

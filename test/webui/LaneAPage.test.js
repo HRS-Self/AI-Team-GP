@@ -68,7 +68,7 @@ test("Lane A page exposes tabs and uses registry workflow ordering", async (t) =
   const html = await pageRes.text();
   assert.equal(pageRes.status, 200);
   assert.match(html, /lane:\s*"lane_a"/);
-  assert.match(html, /"Status", "Interview", "Committee", "Meetings", "Approvals"/);
+  assert.match(html, /"Status", "Interview", "Committee", "Meetings", "Approvals", "Skills"/);
 
   const regRes = await fetch(`${baseUrl}/api/command-registry?webOnly=1`);
   const regJson = await regRes.json();
@@ -85,6 +85,23 @@ test("Lane A page exposes tabs and uses registry workflow ordering", async (t) =
     "--knowledge-sufficiency",
     "--knowledge-confirm-v1",
     "--knowledge-kickoff-forward",
+  ]);
+
+  const skillCommands = regJson.commands
+    .filter((cmd) => cmd.lane === "lane_a" && cmd.tab === "Skills")
+    .sort(cmpRegistry)
+    .map((cmd) => cmd.cmd);
+  assertOrderedSubset(skillCommands, [
+    "--project-skills-status",
+    "--skills-list",
+    "--skills-show",
+    "--project-skills-allow",
+    "--project-skills-deny",
+    "--skills-draft",
+    "--skills-refresh",
+    "--skills-governance",
+    "--skills-approve",
+    "--skills-reject",
   ]);
 });
 
